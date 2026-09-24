@@ -183,6 +183,91 @@ def batch1():
                 {"size": 900, "color": GRAY, "line": 110000})]))
     slides.append(s)
 
+    # 8 最近のトピック：〇〇エンジニアリングの変遷 ----------------------------------------------
+    s = Slide("content", "最近のトピック：「〇〇エンジニアリング」の変遷")
+    s.text(X0, 1000000, W, 400000,
+           para("AI をうまく使うために「何を設計するか」が、**指示文 → 渡す情報 → 作業の仕組み → 繰り返し方** へと広がってきた。",
+                size=1250, line=115000, accent=NAVY))
+    # 入れ子の図（外側ほど新しい・範囲が広い）
+    nest = [("ループ", "E8F2FB", NAVY), ("ハーネス", "CFE3F5", NAVY), ("コンテキスト", "A9CCEC", NAVY), ("プロンプト", BLUE, WHITE)]
+    bx, by, bw, bh = X0, 1500000, 3900000, 3950000
+    for i, (lab, f, c) in enumerate(nest):
+        d = i * 420000
+        s.box(bx + d, by + d, bw - 2 * d, bh - 2 * d, para(lab, size=1250, bold=True, color=c),
+              fill=f, prst="roundRect", adj={"adj": 6000}, inset=(140000, 70000, 100000, 45720))
+    s.text(bx, by + bh + 30000, bw, 300000, para("外側ほど新しく、内側を含んでいる", size=1000, color=GRAY, align="ctr"))
+    rows = [("プロンプト", "2022年〜", "1回の指示文を工夫する", "役割・目的・前提・出力形式を書く（第2章）"),
+            ("コンテキスト", "2025年〜", "AI に渡す情報全体を設計する", "指示に加え、資料・会話履歴・検索結果・ツールの結果を選んで渡す"),
+            ("ハーネス", "2026年〜", "AI が作業する「仕組み」を設計する", "使える道具・権限・ルール（AGENTS.md など）・検証（テスト）を整える"),
+            ("ループ", "2026年〜", "自律的に繰り返す「回し方」を設計する", "実行 → 結果の確認 → 修正 → 繰り返し。完了条件と止める条件を決める")]
+    rx = X0 + 4150000
+    rw = W - 4150000
+    for i, (name, when, what, ex) in enumerate(rows):
+        y = 1500000 + i * 1090000
+        s.box(rx, y, 1500000, 980000,
+              ps([(name, {"size": 1250, "bold": True, "color": WHITE, "align": "ctr"}),
+                  (when, {"size": 1050, "color": WHITE, "align": "ctr"})]),
+              fill=[BLUE, "2B6CA3", NAVY, "0B2E4F"][i], prst="roundRect", anchor="ctr", inset=(0, 0, 0, 0))
+        s.box(rx + 1580000, y, rw - 1580000, 980000,
+              ps([(what, {"size": 1250, "bold": True, "color": NAVY, "space_after": 200}),
+                  (ex, {"size": 1050, "line": 112000})]),
+              fill=PALE, anchor="ctr", inset=(150000, 45720, 120000, 45720))
+    s.text(X0, 6000000, W, 300000,
+           para("※ 呼び方や時期は提唱者・記事によって異なり、まだ定まっていない。前の段階が不要になるのではなく、内側に含まれていく。",
+                size=950, color=GRAY))
+    slides.append(s)
+
+    # 9 前提となる利用環境 --------------------------------------------------------------------------
+    s = Slide("content", "最近のトピック：それぞれの前提となる利用環境")
+    rows = [["呼び方", "前提となる利用環境（代表例）", "人が設計するもの", "本研修で扱う場所"],
+            ["プロンプト", "チャット画面での1問1答。人が毎回指示を書く\n（Copilot アプリ、ChatGPT など）",
+             "指示文：役割・目的・前提・出力形式", "第2章 プロンプト設計"],
+            ["コンテキスト", "資料・履歴・検索結果を AI に渡せる環境\n（Word のファイル参照、ノートブック、社内データ連携、RAG、メモリ）",
+             "何を渡し、何を渡さないか（＝入力する情報の選別・マスキング）", "第3章 セキュア活用\n第4〜8章 Office 連携"],
+            ["ハーネス", "AI が道具を使って作業するエージェント環境\n（Codex などのコーディングエージェント、サンドボックス、承認設定）",
+             "道具・権限・ルールファイル（AGENTS.md）・テストなどの検証", "第10章 Codex 開発\n（AGENTS.md、テスト）"],
+            ["ループ", "エージェントが自律的に繰り返し動く環境\n（長時間の実行、定期実行、自動テストと組み合わせた運用）",
+             "ゴール・完了条件・止める条件・人が確認するタイミング", "第10章 ステージごとの\n動作確認 → 修正"]]
+    s.table(X0, 1030000, [1400000, 3600000, 2500000, W - 7500000], rows,
+            row_h=[420000, 880000, 1050000, 1050000, 1050000], size=1050, bold_cols=(0,),
+            fills={(1, 0): "DCEBF7", (2, 0): "CFE3F5", (3, 0): "A9CCEC", (4, 0): "A9CCEC"})
+    s.box(X0, 5580000, W, 520000,
+          para("Premium の Copilot で主に使うのは **プロンプトとコンテキスト**。ハーネス・ループは Codex などの開発環境が前提。",
+               size=1150, accent=NAVY),
+          fill=LIGHT, prst="roundRect", anchor="ctr", inset=(200000, 0, 200000, 0))
+    slides.append(s)
+
+    # 10 何が変わり、何が変わらないか -----------------------------------------------------------------
+    s = Slide("content", "最近のトピック：何が変わり、何が変わらないか")
+    s.text(X0, 1000000, W, 330000, para("人の役割の変化", size=1350, bold=True, color=NAVY))
+    roles = ["指示を書く", "材料をそろえる", "仕組みを整える", "回し方と止め方を決める"]
+    sw = (W + 120000 * 3) / 4
+    for i, t in enumerate(roles):
+        s.box(X0 + i * (sw - 120000), 1380000, sw, 620000, para(t, size=1100, bold=True, color=WHITE, align="ctr"),
+              fill=[BLUE, "2B6CA3", NAVY, "0B2E4F"][i], prst="chevron" if i else "homePlate", anchor="ctr",
+              adj={"adj": 30000}, inset=(250000, 0, 180000, 0))
+    s.box(X0, 2200000, (W - 230000) / 2, 2250000,
+          ps([("任せる範囲が広がる ＝ 影響も大きくなる", {"size": 1300, "bold": True, "color": ORANGE, "space_after": 500}),
+              ("AI が自分で道具を使い、何千回も繰り返し動くようになった", {"bullet": "dot", "size": 1150, "line": 112000, "space_after": 300}),
+              ("7月の侵入事例（前ページ）は、エージェントが想定外の行動をとった例として報じられている", {"bullet": "dot", "size": 1150, "line": 112000, "space_after": 300}),
+              ("権限・サンドボックス・止める条件の設計がより重要に", {"bullet": "dot", "size": 1150, "line": 112000})]),
+          fill=ORANGE_PALE, prst="roundRect", adj={"adj": 6000}, inset=(200000, 180000, 150000, 100000))
+    s.box(X0 + (W - 230000) / 2 + 230000, 2200000, (W - 230000) / 2, 2250000,
+          ps([("変わらないこと", {"size": 1300, "bold": True, "color": NAVY, "space_after": 500}),
+              ("何を AI に渡すかを判断するのは人（第3章）", {"bullet": "check", "size": 1150, "line": 112000, "space_after": 300}),
+              ("出力が正しいかを確認するのは人", {"bullet": "check", "size": 1150, "line": 112000, "space_after": 300}),
+              ("送信・提出・約束など、最終判断と責任は人", {"bullet": "check", "size": 1150, "line": 112000})]),
+          fill=LIGHT, prst="roundRect", adj={"adj": 6000}, inset=(200000, 180000, 150000, 100000))
+    s.box(X0, 4600000, W, 1000000,
+          ps([("営業担当者はどこから？", {"size": 1250, "bold": True, "color": NAVY, "space_after": 300}),
+              ("まずは **プロンプトとコンテキスト**（第2〜8章）。繰り返す作業をアプリや自動化にするときに **ハーネスとループ**（第9〜10章）。",
+               {"size": 1200, "line": 115000, "accent": NAVY})]),
+          fill=PALE, prst="roundRect", anchor="ctr", adj={"adj": 6000}, inset=(220000, 91440, 220000, 91440))
+    s.text(X0, 5700000, W, 450000,
+           para("参考：A. Karpathy・T. Lütke の発信（2025年6月、コンテキストエンジニアリング）、OpenAI「Harness engineering: leveraging Codex in an agent-first world」、"
+                "ADTmag「Loop Engineering Emerges as Developers Put AI Coding Agents on Repeat」（2026年7月）", size=900, color=GRAY, line=110000))
+    slides.append(s)
+
     # 7 1.1 AIの歩み ---------------------------------------------------------------
     s = Slide("content", "1.1 AIの歩み")
     rows = [["時期", "出来事", "ポイント"],
