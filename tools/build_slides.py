@@ -477,6 +477,150 @@ def batch2():
 GREEN, GREEN_PALE, AMBER, AMBER_PALE, RED, RED_PALE = "2E8B57", "E3F2E8", "B7791F", "FFF4D6", "C0392B", "FBE3E0"
 
 
+def mini_header(s, label, minutes, lead):
+    """ミニ演習スライドの共通ヘッダー（バッジ＋導入文）。"""
+    s.box(X0, 1030000, 1500000, 420000, para(f"ミニ演習 {label}", size=1250, bold=True, color=WHITE, align="ctr"),
+          fill=ORANGE, prst="roundRect", anchor="ctr", inset=(0, 0, 0, 0))
+    s.box(X0 + 1600000, 1030000, 900000, 420000, para(minutes, size=1200, bold=True, color=ORANGE, align="ctr"),
+          fill=ORANGE_PALE, prst="roundRect", anchor="ctr", inset=(0, 0, 0, 0))
+    s.text(X0 + 2650000, 1030000, W - 2650000, 420000, para(lead, size=1300, bold=True, color=NAVY), anchor="ctr")
+
+
+def mini_a():
+    s = Slide("content", "ミニ演習A：自分の利用環境を確認する")
+    mini_header(s, "A", "3分", "ルールを守るには、まず「自分が何を使っているか」を知る")
+    steps = ["Copilot アプリの設定を開き、会話データの扱い（モデルの学習への利用など）に関する項目を探す",
+             "サインインしているアカウントが「個人」か「職場」かを確認する",
+             "自社で、個人契約の AI を業務に使ってよいか決まっているかを書き出す（分からなければ「確認が必要」）"]
+    for i, t in enumerate(steps):
+        y = 1700000 + i * 900000
+        s.circle_num(X0, y, 520000, i + 1)
+        s.text(X0 + 680000, y - 60000, 4300000, 700000, para(t, size=1250, line=115000), anchor="ctr")
+    rows = [["確認項目", "結果（メモ）"], ["会話データの設定", ""], ["アカウントの種類", "個人 ／ 職場"], ["会社のルール", ""]]
+    s.table(X0 + 5200000, 1700000, [1800000, W - 7000000], rows, row_h=[420000, 650000, 650000, 650000], size=1200,
+            bold_cols=(0,))
+    s.box(X0, 4700000, W, 1250000,
+          ps([("ふりかえり", {"size": 1300, "bold": True, "color": NAVY, "space_after": 400}),
+              ("3名の結果を比べる。会社のルールが「分からない」なら、それ自体が職場に持ち帰る確認事項になる。", {"size": 1250}),
+              ("※ 設定の名称・場所は変わることがある。見つからなければ講師に声をかける。", {"size": 1050, "color": GRAY})]),
+          fill=LIGHT, prst="roundRect", anchor="ctr", adj={"adj": 6000}, inset=(250000, 91440, 250000, 91440))
+    return [s]
+
+
+QUIZ_B = [
+    ("生成AIを業務で使う企業では、ルール整備と社員教育が課題になっている（一般的な動向）", "A", "一般的な動向"),
+    ("商談で聞いた「全社約300名、Microsoft 365 を全社で利用」", "B", "社名を伏せれば可（公開情報と確認できれば A）"),
+    ("佐藤様の携帯電話番号とメールアドレス", "C", "個人の連絡先。目的に不要"),
+    ("当社が提示した「A案60万円・B案100万円」", "B", "顧客名と結びつけずに使う"),
+    ("田中様「Copilot の利用可否は把握できていない」", "B", "社名・氏名を伏せ「対象者のライセンス状況が未確認」と一般化"),
+    ("当社の値引き上限（営業部長の承認で15%まで）", "C", "自社の社外秘の方針"),
+]
+
+
+def mini_b():
+    s = Slide("content", "ミニ演習B：A／B／C を判定する")
+    mini_header(s, "B", "3分", "みらい商事の商談で出てきた情報を、個人契約の Copilot に入力してよいか判定する")
+    rows = [["No", "情報", "判定"]] + [[str(i + 1), q, ""] for i, (q, _, _) in enumerate(QUIZ_B)]
+    s.table(X0, 1650000, [650000, W - 2150000, 1500000], rows, row_h=[400000] + [560000] * 6, size=1200,
+            aligns=["ctr", "l", "ctr"])
+    s.text(X0, 5500000, W, 450000,
+           para("判定（A：入力可／B：加工すれば可／C：入力不可）と、理由を一言で書く。Copilot は使わない。", size=1200, color=GRAY))
+    return [s]
+
+
+def mini_c():
+    s = Slide("content", "ミニ演習C：文字起こしをマスキングする")
+    mini_header(s, "C", "4分", "Copilot に渡せる形に書き換える（紙または Word で。Copilot は使わない）")
+    s.text(X0, 1650000, W, 330000, para("素材（初回訪問の文字起こしより）", size=1250, bold=True, color=NAVY))
+    lines = ["話者B: みらい商事、人材開発担当の佐藤美和です。隣に営業企画担当の田中淳も同席しています。",
+             "話者B: 予算は100万円程度を目安に見ています。ただ、これは承認済みの上限ではありません。",
+             "話者C: 私のほうで持てるかどうかは、上長と相談してからになります。"]
+    s.box(X0, 2020000, W, 1500000, ps([(t, {"size": 1250, "line": 120000, "space_after": 300}) for t in lines]),
+          fill=CODE_FILL, line="C8C8C8", anchor="ctr", inset=(220000, 91440, 220000, 91440))
+    hints = [("置換", "社名・氏名を記号に（長い語から）"), ("一般化", "金額は目的に必要な範囲で"),
+             ("削除", "目的に不要な情報を消す"), ("抽象化", "発言を課題の型に置き換える")]
+    cw = (W - 3 * 150000) / 4
+    for i, (h, b) in enumerate(hints):
+        x = X0 + i * (cw + 150000)
+        s.box(x, 3750000, cw, 1100000,
+              ps([(h, {"size": 1300, "bold": True, "color": BLUE, "align": "ctr", "space_after": 300}),
+                  (b, {"size": 1100, "align": "ctr", "line": 115000})]),
+              fill=PALE, prst="roundRect", anchor="ctr", adj={"adj": 8000}, inset=(100000, 45720, 100000, 45720))
+    s.box(X0, 5050000, W, 850000,
+          para("置き換えの対応表（例：A社＝みらい商事、顧客担当者B＝佐藤様）は手元のメモで管理し、Copilot には渡さない。",
+               size=1200, line=115000),
+          fill=ORANGE_PALE, prst="roundRect", anchor="ctr", inset=(220000, 45720, 220000, 45720))
+    return [s]
+
+
+def answer_bc():
+    s = Slide("content", "ミニ演習B・C　解答例")
+    rows = [["No", "判定", "理由"]] + [[str(i + 1), a, r] for i, (_, a, r) in enumerate(QUIZ_B)]
+    fills = {(i + 1, 1): {"A": GREEN_PALE, "B": AMBER_PALE, "C": RED_PALE}[a] for i, (_, a, _) in enumerate(QUIZ_B)}
+    s.text(X0, 1030000, 4000000, 330000, para("B：判定", size=1300, bold=True, color=NAVY))
+    s.table(X0, 1400000, [500000, 700000, 3100000], rows, row_h=[380000] + [620000] * 6, size=1100,
+            aligns=["ctr", "ctr", "l"], fills=fills)
+    rx = X0 + 4500000
+    rw = W - 4500000
+    s.text(rx, 1030000, rw, 330000, para("C：書き換えの例", size=1300, bold=True, color=NAVY))
+    ex = ["話者B: 商社A社、人材開発担当の顧客担当者Bです。隣に営業企画担当の顧客担当者Cも同席しています。",
+          "話者B: 予算の目安はあるが、まだ承認されていない。",
+          "話者C: 受講後の支援担当は、上長と相談して決める予定。"]
+    s.box(rx, 1400000, rw, 2300000, ps([(t, {"size": 1150, "line": 120000, "space_after": 400}) for t in ex]),
+          fill=CODE_FILL, line="C8C8C8", anchor="ctr", inset=(180000, 91440, 180000, 91440))
+    s.box(rx, 3850000, rw, 2150000,
+          ps([("ポイント", {"size": 1250, "bold": True, "color": NAVY, "space_after": 300}),
+              ("「佐藤美和」を先に置き換える。「佐藤」が先だと「美和」が残る", {"bullet": "dot", "size": 1100, "space_after": 300}),
+              ("金額は、文章を作る目的に必要なければ一般化する", {"bullet": "dot", "size": 1100, "space_after": 300}),
+              ("誰の発言か（話者B・C）は残してよい。話者の対応表は手元で管理", {"bullet": "dot", "size": 1100})]),
+          fill=LIGHT, prst="roundRect", adj={"adj": 6000}, inset=(180000, 150000, 150000, 91440))
+    return [s]
+
+
+ERRORS_D = [
+    ("B案は120万円（1名6万円）", "B案は100万円（1名5万円）、税抜", "話者A・C"),
+    ("予算は100万円で承認済み", "100万円は目安で、承認済みの上限ではない", "話者B"),
+    ("骨子は来週金曜（10/16）に送付", "骨子は今週金曜（10/9）に送付", "話者A"),
+    ("Copilot の利用可否は情報システム部門が10/13までに確認", "担当・期限は未定（社内で相談のうえ連絡）", "話者A・C"),
+    ("事前アンケートを実施することで合意", "合意ではなく、提案の中の「案」として出す", "話者A"),
+]
+
+
+def mini_d():
+    s = Slide("content", "ミニ演習D：AIが作った議事録の誤りを探す")
+    mini_header(s, "D", "5分", "文字起こし（03_商談文字起こし_初回訪問）と照合し、誤りを見つけて正しく直す")
+    s.text(X0, 1650000, W, 330000, para("Copilot が作った議事録（抜粋）", size=1250, bold=True, color=NAVY))
+    items = ["対象は法人営業の担当者20名"] + [e for e, _, _ in ERRORS_D]
+    order = [0, 3, 1, 5, 2, 4]  # 正しい項目と誤りを混ぜて並べる
+    s.box(X0, 2020000, 5700000, 3300000,
+          ps([(items[i], {"bullet": "dot", "size": 1250, "line": 115000, "space_after": 500}) for i in order]),
+          fill=CODE_FILL, line="C8C8C8", anchor="ctr", inset=(220000, 91440, 220000, 91440))
+    s.box(X0 + 5900000, 2020000, W - 5900000, 3300000,
+          ps([("ヒント", {"size": 1300, "bold": True, "color": ORANGE, "space_after": 500}),
+              ("誤りは5つ、正しいものは1つ", {"bullet": "dot", "size": 1200, "space_after": 300}),
+              ("数字・日付を照合する", {"bullet": "dot", "size": 1200, "space_after": 300}),
+              ("「決まったこと」と「まだ決まっていないこと」を区別する", {"bullet": "dot", "size": 1200, "space_after": 300}),
+              ("誰の発言かも確かめる", {"bullet": "dot", "size": 1200})]),
+          fill=ORANGE_PALE, prst="roundRect", adj={"adj": 6000}, inset=(200000, 150000, 150000, 91440))
+    s.text(X0, 5500000, W, 450000,
+           para("※ この誤りは、実際に AI が起こしやすいパターン（数字の取り違え・相対日付の誤変換・推測での補完）を再現したもの。",
+                size=1050, color=GRAY))
+    return [s]
+
+
+def answer_d():
+    s = Slide("content", "ミニ演習D　解答")
+    rows = [["AIの議事録（誤り）", "正しい内容", "根拠の発言"]] + [list(e) for e in ERRORS_D]
+    s.table(X0, 1030000, [3400000, W - 4900000, 1500000], rows, row_h=[420000] + [640000] * 5, size=1150,
+            fills={(i + 1, 0): RED_PALE for i in range(5)}, aligns=["l", "l", "ctr"])
+    s.box(X0, 4850000, W, 1150000,
+          ps([("正しかったもの：対象は法人営業の担当者20名（話者B）", {"size": 1250, "bold": True, "color": GREEN, "space_after": 400}),
+              ("誤りの型：①数字の取り違え ②未確定を確定と書く ③相対日付の誤変換 ④担当・期限の推測 ⑤案を合意と書く",
+               {"size": 1200})]),
+          fill=LIGHT, prst="roundRect", anchor="ctr", adj={"adj": 6000}, inset=(250000, 91440, 250000, 91440))
+    return [s]
+
+
 def batch3():
     slides = []
 
@@ -531,7 +675,7 @@ def batch3():
           ps([("セキュリティチェック", {"size": 1300, "bold": True, "color": ORANGE, "space_after": 400}),
               ("演習3で使うのは公開情報（判定A）だけ。顧客プロフィール（01_顧客プロフィール.docx）は **読むだけ** で、Copilot には貼り付けない。",
                {"size": 1250, "accent": ORANGE}),
-              ("詳しい手順は演習ガイドを参照", {"size": 1100, "color": GRAY})]),
+              ("手順とプロンプト例：配布資料「03_演習ガイド」の演習1〜3（docs/word/03_演習ガイド.docx）", {"size": 1100, "color": GRAY})]),
           fill=ORANGE_PALE, prst="roundRect", anchor="ctr", adj={"adj": 6000}, inset=(220000, 91440, 220000, 91440))
     slides.append(s)
 
@@ -590,6 +734,8 @@ def batch3():
           fill=LIGHT, prst="roundRect", anchor="ctr", adj={"adj": 6000}, inset=(250000, 91440, 250000, 91440))
     slides.append(s)
 
+    slides += mini_a()
+
     # 27 3.3 3段階判定 --------------------------------------------------------------------
     s = Slide("content", "3.3 入力してよい情報の3段階判定")
     rows = [["判定", "意味", "例"],
@@ -604,6 +750,8 @@ def batch3():
               ("問題があれば B か C。迷ったら C として扱い、上長に相談する。", {"size": 1250})]),
           fill=ORANGE_PALE, prst="roundRect", anchor="ctr", adj={"adj": 6000}, inset=(250000, 91440, 250000, 91440))
     slides.append(s)
+
+    slides += mini_b()
 
     # 28 3.4 マスキング -----------------------------------------------------------------------
     s = Slide("content", "3.4 マスキングの4つの技法")
@@ -624,6 +772,8 @@ def batch3():
                {"bullet": "dot", "size": 1200})]),
           fill=LIGHT, prst="roundRect", anchor="ctr", adj={"adj": 6000}, inset=(250000, 91440, 250000, 91440))
     slides.append(s)
+
+    slides += mini_c() + answer_bc()
 
     # 29 3.5 ハルシネーション対策 ----------------------------------------------------------------
     s = Slide("content", "3.5 ハルシネーションへの対策")
@@ -646,6 +796,8 @@ def batch3():
                   (b, {"size": 1150, "line": 115000})]),
               fill=ORANGE_PALE, prst="roundRect", adj={"adj": 8000}, inset=(180000, 150000, 150000, 100000))
     slides.append(s)
+
+    slides += mini_d() + answer_d()
 
     # 30 3.6 プロンプトインジェクション ------------------------------------------------------------
     s = Slide("content", "3.6 プロンプトインジェクションへの注意")
