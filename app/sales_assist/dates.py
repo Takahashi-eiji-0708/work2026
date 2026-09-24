@@ -1,4 +1,4 @@
-"""「来週金曜」「10月20日」などの期限表現を、商談日を基準に具体的な日付へ変換する。"""
+"""「来週金曜」「10月16日」などの期限表現を、商談日を基準に具体的な日付へ変換する。"""
 import re
 import unicodedata
 from datetime import date, timedelta

@@ -1,11 +1,11 @@
 承知しました。以下が議事録のJSONです。
 ```json
 {
-  "summary": "若手技術者向けDX研修の初回ヒアリング。",
-  "background": ["中期経営計画でDX推進が重点施策"],
-  "requirements": [{"item": "対象", "detail": "入社2〜5年目の技術職 約60名"}],
-  "concerns": ["データ持ち出しには情報システム部の許可が必要"],
-  "decisions": ["次回打ち合わせは10月20日14時"],
+  "summary": "法人営業向け生成AI活用研修の初回ヒアリング。",
+  "background": ["一部の部署で Copilot を試行中だが、使い方がバラバラ"],
+  "requirements": [{"item": "対象", "detail": "法人営業 約20名"}],
+  "concerns": ["予算は承認前で、決裁者が未特定"],
+  "decisions": ["次回打ち合わせは10月16日14時"],
   "actions": [{"owner": "[PERSON_3]", "task": "対象者リストを送付", "due": "来週火曜"}]
 }
 ```

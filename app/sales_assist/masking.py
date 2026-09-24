@@ -50,7 +50,7 @@ def mask(text: str, terms: list[tuple[str, str]] | None = None) -> MaskResult:
 
     mapping: dict[str, str] = {}
     seq: dict[str, int] = {}
-    # 長い語から置換する（「みなと精機」より先に「株式会社みなと精機」を置換するため）
+    # 長い語から置換する（「みらい商事」より先に「みらい商事株式会社」を置換するため）
     for term, kind in sorted(terms or [], key=lambda t: len(t[0]), reverse=True):
         term = normalize(term).strip()
         if not term or term not in text:
