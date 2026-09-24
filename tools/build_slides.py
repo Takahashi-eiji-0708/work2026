@@ -5,6 +5,7 @@
 """
 from pathlib import Path
 
+from slides_minis import insert_minis
 from slide_lib import (BLUE, BOTTOM, GRAY, LIGHT, NAVY, ORANGE, ORANGE_PALE, PALE, TEXT, WHITE, W, X0, Y0,
                        Slide, build, para, ps)
 
@@ -349,7 +350,7 @@ def batch1():
     slides.append(s)
 
     # 10 ミニ演習 ---------------------------------------------------------------------
-    s = Slide("content", "ミニ演習：同じ質問を聞き比べる（約5分）")
+    s = Slide("content", "ミニ演習 1-2：同じ質問を聞き比べる（約5分）")
     steps = ["Copilot アプリで新しいチャットを開き、質問Aを入力する",
              "隣の人と答えを見比べる",
              "「再生成」して、もう一度比べる",
@@ -603,8 +604,8 @@ def mini_header(s, label, minutes, lead):
 
 
 def mini_a():
-    s = Slide("content", "ミニ演習A：自分の利用環境を確認する")
-    mini_header(s, "A", "3分", "ルールを守るには、まず「自分が何を使っているか」を知る")
+    s = Slide("content", "ミニ演習 3-2：自分の利用環境を確認する")
+    mini_header(s, "3-2", "3分", "ルールを守るには、まず「自分が何を使っているか」を知る")
     steps = ["Copilot アプリの設定を開き、会話データの扱い（モデルの学習への利用など）に関する項目を探す",
              "サインインしているアカウントが「個人」か「職場」かを確認する",
              "自社で、個人契約の AI を業務に使ってよいか決まっているかを書き出す（分からなければ「確認が必要」）"]
@@ -634,8 +635,8 @@ QUIZ_B = [
 
 
 def mini_b():
-    s = Slide("content", "ミニ演習B：A／B／C を判定する")
-    mini_header(s, "B", "3分", "みらい商事の商談で出てきた情報を、個人契約の Copilot に入力してよいか判定する")
+    s = Slide("content", "ミニ演習 3-3：A／B／C を判定する")
+    mini_header(s, "3-3", "3分", "みらい商事の商談で出てきた情報を、個人契約の Copilot に入力してよいか判定する")
     rows = [["No", "情報", "判定"]] + [[str(i + 1), q, ""] for i, (q, _, _) in enumerate(QUIZ_B)]
     s.table(X0, 1650000, [650000, W - 2150000, 1500000], rows, row_h=[400000] + [560000] * 6, size=1200,
             aligns=["ctr", "l", "ctr"])
@@ -645,8 +646,8 @@ def mini_b():
 
 
 def mini_c():
-    s = Slide("content", "ミニ演習C：文字起こしをマスキングする")
-    mini_header(s, "C", "4分", "Copilot に渡せる形に書き換える（紙または Word で。Copilot は使わない）")
+    s = Slide("content", "ミニ演習 3-4：文字起こしをマスキングする")
+    mini_header(s, "3-4", "4分", "Copilot に渡せる形に書き換える（紙または Word で。Copilot は使わない）")
     s.text(X0, 1650000, W, 330000, para("素材（初回訪問の文字起こしより）", size=1250, bold=True, color=NAVY))
     lines = ["話者B: みらい商事、人材開発担当の佐藤美和です。隣に営業企画担当の田中淳も同席しています。",
              "話者B: 予算は100万円程度を目安に見ています。ただ、これは承認済みの上限ではありません。",
@@ -670,15 +671,15 @@ def mini_c():
 
 
 def answer_bc():
-    s = Slide("content", "ミニ演習B・C　解答例")
+    s = Slide("content", "ミニ演習 3-3・3-4　解答例")
     rows = [["No", "判定", "理由"]] + [[str(i + 1), a, r] for i, (_, a, r) in enumerate(QUIZ_B)]
     fills = {(i + 1, 1): {"A": GREEN_PALE, "B": AMBER_PALE, "C": RED_PALE}[a] for i, (_, a, _) in enumerate(QUIZ_B)}
-    s.text(X0, 1030000, 4000000, 330000, para("B：判定", size=1300, bold=True, color=NAVY))
+    s.text(X0, 1030000, 4000000, 330000, para("3-3：判定", size=1300, bold=True, color=NAVY))
     s.table(X0, 1400000, [500000, 700000, 3100000], rows, row_h=[380000] + [620000] * 6, size=1100,
             aligns=["ctr", "ctr", "l"], fills=fills)
     rx = X0 + 4500000
     rw = W - 4500000
-    s.text(rx, 1030000, rw, 330000, para("C：書き換えの例", size=1300, bold=True, color=NAVY))
+    s.text(rx, 1030000, rw, 330000, para("3-4：書き換えの例", size=1300, bold=True, color=NAVY))
     ex = ["話者B: 商社A社、人材開発担当の顧客担当者Bです。隣に営業企画担当の顧客担当者Cも同席しています。",
           "話者B: 予算の目安はあるが、まだ承認されていない。",
           "話者C: 受講後の支援担当は、上長と相談して決める予定。"]
@@ -703,8 +704,8 @@ ERRORS_D = [
 
 
 def mini_d():
-    s = Slide("content", "ミニ演習D：AIが作った議事録の誤りを探す")
-    mini_header(s, "D", "5分", "文字起こし（03_商談文字起こし_初回訪問）と照合し、誤りを見つけて正しく直す")
+    s = Slide("content", "ミニ演習 3-5：AIが作った議事録の誤りを探す")
+    mini_header(s, "3-5", "5分", "文字起こし（03_商談文字起こし_初回訪問）と照合し、誤りを見つけて正しく直す")
     s.text(X0, 1650000, W, 330000, para("Copilot が作った議事録（抜粋）", size=1250, bold=True, color=NAVY))
     items = ["対象は法人営業の担当者20名"] + [e for e, _, _ in ERRORS_D]
     order = [0, 3, 1, 5, 2, 4]  # 正しい項目と誤りを混ぜて並べる
@@ -725,7 +726,7 @@ def mini_d():
 
 
 def answer_d():
-    s = Slide("content", "ミニ演習D　解答")
+    s = Slide("content", "ミニ演習 3-5　解答")
     rows = [["AIの議事録（誤り）", "正しい内容", "根拠の発言"]] + [list(e) for e in ERRORS_D]
     s.table(X0, 1030000, [3400000, W - 4900000, 1500000], rows, row_h=[420000] + [640000] * 5, size=1150,
             fills={(i + 1, 0): RED_PALE for i in range(5)}, aligns=["l", "l", "ctr"])
@@ -1001,7 +1002,7 @@ def batch4():
               ("⑨パスワードは「そもそもメモに書かない」", {"bullet": "dot", "size": 1150})]),
           fill=ORANGE_PALE, prst="roundRect", adj={"adj": 6000}, inset=(200000, 150000, 150000, 91440))
     s.box(X0, 4850000, W, 1100000,
-          para("ミニ演習B・C との違い：ミニ演習は **商談後の文字起こし**、演習4は **商談前のメモ** が題材。"
+          para("ミニ演習 3-3・3-4 との違い：ミニ演習は **商談後の文字起こし**、演習4は **商談前のメモ** が題材。"
                "判定して加工したものを、実際に Copilot に渡すところまで行う。", size=1200, line=120000, accent=NAVY),
           fill=LIGHT, prst="roundRect", anchor="ctr", inset=(250000, 45720, 250000, 45720))
     slides.append(s)
@@ -1148,7 +1149,7 @@ BATCHES = [batch1, batch2, batch3, batch4]
 
 
 def main():
-    slides = [s for b in BATCHES for s in b()]
+    slides = insert_minis([s for b in BATCHES for s in b()])
     build(TEMPLATE, slides, OUT)
     print(f"{OUT.relative_to(ROOT)}（{len(slides)}枚）")
 
