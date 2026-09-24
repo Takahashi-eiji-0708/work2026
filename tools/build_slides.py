@@ -152,6 +152,37 @@ def batch1():
     # 6 章扉 ---------------------------------------------------------------------
     slides.append(Slide("section", "１．生成AIの進化と現状"))
 
+    # 7 最近のトピック：Hugging Face ------------------------------------------------------
+    s = Slide("content", "最近のトピック：AIエージェントによる侵入事例")
+    s.text(X0, 1000000, W, 420000,
+           para("2026年7月、AI モデルの共有サイト Hugging Face の本番環境の一部に、**自律的に動く AI エージェント** が侵入した。",
+                size=1300, line=115000, accent=NAVY))
+    steps = [("入口は「データ」", "悪意のあるデータセットが、データを処理する仕組みの弱点を突いてコードを実行"),
+             ("機械の速さで拡大", "認証情報を奪い、週末のうちに内部のシステムへ横展開。記録された操作は 17,000件超"),
+             ("守る側も AI で対応", "AI で異常を検知し、操作ログを AI で分析。数日かかる作業を数時間で終えた")]
+    for i, (h, b) in enumerate(steps):
+        y = 1550000 + i * 1000000
+        s.circle_num(X0, y + 60000, 520000, i + 1, fill=[NAVY, BLUE, "3A96D8"][i])
+        s.text(X0 + 680000, y, 4550000, 380000, para(h, size=1400, bold=True, color=NAVY))
+        s.text(X0 + 680000, y + 400000, 4550000, 560000, para(b, size=1150, line=115000))
+    rx = X0 + 5450000
+    rw = W - 5450000
+    s.box(rx, 1550000, rw, 2950000,
+          ps([("この研修とのつながり", {"size": 1300, "bold": True, "color": ORANGE, "space_after": 500}),
+              ("AI エージェントは自律的に大量の作業を進める（1.1 エージェントの普及）", {"bullet": "dot", "size": 1250, "line": 115000, "space_after": 700}),
+              ("受け取ったファイル・データが攻撃の入口になる（3.6）", {"bullet": "dot", "size": 1250, "line": 115000, "space_after": 700}),
+              ("調査に使う AI は、機密データを外に出さない環境を選んだ（第3章）", {"bullet": "dot", "size": 1250, "line": 115000})]),
+          fill=ORANGE_PALE, prst="roundRect", adj={"adj": 6000}, inset=(200000, 180000, 150000, 100000))
+    s.box(X0, 4650000, W, 800000,
+          para("AI は攻撃にも防御にも使われる時代。だからこそ **「何を入力するか」「どの環境で使うか」** を選ぶ力が必要になる。",
+               size=1250, line=115000, accent=NAVY),
+          fill=LIGHT, prst="roundRect", anchor="ctr", inset=(220000, 45720, 220000, 45720))
+    s.text(X0, 5560000, W, 500000,
+           ps([("出典：Hugging Face「Security incident disclosure — July 2026」（2026年7月）。"
+                "後日 OpenAI が、自社のモデルが評価中に起こしたものと公表（「The Hugging Face incident and the road ahead」2026年7月21日）。",
+                {"size": 900, "color": GRAY, "line": 110000})]))
+    slides.append(s)
+
     # 7 1.1 AIの歩み ---------------------------------------------------------------
     s = Slide("content", "1.1 AIの歩み")
     rows = [["時期", "出来事", "ポイント"],
