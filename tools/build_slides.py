@@ -687,9 +687,9 @@ def answer_bc():
           fill=CODE_FILL, line="C8C8C8", anchor="ctr", inset=(180000, 91440, 180000, 91440))
     s.box(rx, 3850000, rw, 2150000,
           ps([("ポイント", {"size": 1250, "bold": True, "color": NAVY, "space_after": 300}),
-              ("「佐藤美和」を先に置き換える。「佐藤」が先だと「美和」が残る", {"bullet": "dot", "size": 1100, "space_after": 300}),
+              ("長い語（佐藤美和）から置き換える。「佐藤」が先だと「顧客担当者B美和」になり、名前が残る", {"bullet": "dot", "size": 1100, "line": 112000, "space_after": 300}),
               ("金額は、文章を作る目的に必要なければ一般化する", {"bullet": "dot", "size": 1100, "space_after": 300}),
-              ("誰の発言か（話者B・C）は残してよい。話者の対応表は手元で管理", {"bullet": "dot", "size": 1100})]),
+              ("誰の発言か（話者B・C）は残してよい。「佐藤美和＝顧客担当者B」のような対応表は手元だけに置き、Copilot には渡さない", {"bullet": "dot", "size": 1100, "line": 112000})]),
           fill=LIGHT, prst="roundRect", adj={"adj": 6000}, inset=(180000, 150000, 150000, 91440))
     return [s]
 
