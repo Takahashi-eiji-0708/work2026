@@ -64,17 +64,23 @@ class MockLLM(LLMClient):
     """
 
     name = "mock"
-    ACTION_WORDS = ("お送りします", "確認しておきます", "お伝えします", "送付します", "ご連絡します", "作成します")
-    CONCERN_WORDS = ("悩み", "懸念", "怖い", "まずい", "しにくかった", "使えない", "承認", "未定", "はっきりしていない", "比較検討")
-    BACKGROUND_WORDS = ("Copilot", "試行", "ガイドライン", "書き物", "時間を取られ")
+    ACTION_WORDS = ("お送りします", "お持ちします", "お付けします", "用意します", "確認を進めます", "社内で確認します",
+                    "確認しておきます", "お伝えします", "送付します", "ご連絡します", "作成します")
+    CONCERN_WORDS = ("不安", "心配", "把握できていません", "承認済みの上限ではありません", "決められません",
+                     "未確認", "未確定", "避けたい", "時間がかかって")
+    BACKGROUND_WORDS = ("差が大きい", "Copilot", "どう使えばいいのか", "顧客情報を入力")
     REQUIREMENT_RULES = (
-        ("対象", ("年目", "名くらい")),
-        ("期間", ("日くらい",)),
-        ("時期", ("上旬", "中旬", "下旬", "月から", "年度内")),
-        ("予算", ("予算",)),
-        ("効果", ("効果測定", "何が変わった")),
-        ("提案の形", ("A案", "2つ")),
+        ("対象", ("担当者20名", "名くらい")),
+        ("対象業務", ("その4つ", "商談準備")),
+        ("内容", ("基本とセキュリティ",)),
+        ("手配", ("会場と端末",)),
+        ("提案（2案）", ("A案は",)),
+        ("予算", ("予算は", "予算の目安")),
+        ("決裁", ("承認するか", "決裁は")),
+        ("効果の確認", ("3段階", "何が変わった")),
+        ("時期", ("上旬", "中旬", "下旬")),
     )
+    HEADER_KEYS = ("日時", "出席", "場所", "※")
     DUE_RE = re.compile(r"(再来週|来週|今週)の?[月火水木金土日]曜?|\d{1,2}月\d{1,2}日|明日|明後日|次回")
 
     def complete(self, system: str, user: str) -> str:
@@ -90,6 +96,9 @@ class MockLLM(LLMClient):
             m = re.match(r"^\s*([^:：\s]{1,15})\s*[:：]\s*(.+)$", line)
             if m:
                 utterances.append((m[1], m[2]))
+        utterances = [(sp, t) for sp, t in utterances if sp not in self.HEADER_KEYS]
+        # 最初に話した人を自社（営業）側とみなす
+        own = utterances[0][0] if utterances else ""
         background, concerns, decisions, actions, reqs = [], [], [], [], {}
         for speaker, text in utterances:
             sentences = [s for s in re.split(r"(?<=[。？！?])", text) if s.strip()]
@@ -99,20 +108,21 @@ class MockLLM(LLMClient):
                 found = self.DUE_RE.search(s)
                 if found:
                     due = found[0]
-                if any(w in s for w in self.BACKGROUND_WORDS) and len(background) < 4 and speaker != "営業":
+                if any(w in s for w in self.BACKGROUND_WORDS) and len(background) < 4 and speaker != own:
                     background.append(s)
-                if any(w in s for w in self.CONCERN_WORDS):
+                if any(w in s for w in self.CONCERN_WORDS) and speaker != own:
                     concerns.append(s)
-                # 質問や自社（営業）側の発言は要件として扱わない
-                is_question = s.endswith(("か。", "か？", "?")) or speaker == "営業"
                 for item, words in self.REQUIREMENT_RULES:
-                    if item not in reqs and not is_question and any(w in s for w in words):
+                    if item not in reqs and any(w in s for w in words):
                         reqs[item] = s
-                if re.search(r"\d{1,2}月\d{1,2}日", s) and ("どうでしょう" in s or "伺います" in s):
-                    decisions.append(f"次回打ち合わせ：{s}")
+                if re.search(r"\d{1,2}月\d{1,2}日", s) and any(w in s for w in ("どうでしょう", "伺います", "お持ちします")):
+                    decisions.append(s)
                 if any(w in s for w in self.ACTION_WORDS):
                     owner_m = re.search(r"(\[PERSON_\d+\])のほうで", s)
-                    actions.append({"owner": owner_m[1] if owner_m else speaker, "task": s, "due": due})
+                    owner = owner_m[1] if owner_m else speaker
+                    actions.append({"owner": owner, "task": s, "due": due})
+                elif "御社側でお願いします" in s:
+                    actions.append({"owner": "顧客（担当未定）", "task": s, "due": ""})
         return {
             "summary": "【モック出力】" + " / ".join(background[:2]),
             "background": background,

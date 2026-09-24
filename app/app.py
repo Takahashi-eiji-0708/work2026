@@ -50,7 +50,7 @@ with tab_reg:
         c1, c2 = st.columns(2)
         customer = c1.text_input("顧客名 *")
         meeting_date = c2.date_input("商談日 *", value=date.today())
-        attendees = st.text_input("出席者", placeholder="例：佐伯課長、大西部長、高野様、中川")
+        attendees = st.text_input("出席者", placeholder="例：佐藤様（人材開発）、田中様（営業企画）、高橋")
         memo = st.text_area("商談メモ・文字起こし *", height=260)
         submitted = st.form_submit_button("登録する", type="primary")
     if submitted:
@@ -197,7 +197,7 @@ with tab_mask:
                "電話番号とメールアドレスは登録しなくても自動で置き換えます（元には戻しません）。")
     with st.form("term_form", clear_on_submit=True):
         c1, c2 = st.columns([3, 1])
-        term = c1.text_input("語句（例：みらい商事、佐伯）")
+        term = c1.text_input("語句（例：みらい商事、佐藤美和、佐藤）")
         kind = c2.selectbox("種類", list(CATEGORY_LABELS), format_func=CATEGORY_LABELS.get)
         if st.form_submit_button("追加"):
             db.add_term(term, kind)

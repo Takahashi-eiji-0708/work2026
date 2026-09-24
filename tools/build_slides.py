@@ -84,17 +84,17 @@ def batch1():
     s = Slide("content", "研修ストーリー：ELIソリューションズの営業として提案する")
     s.box(X0, 1030000, 2600000, 760000,
           ps([("ELIソリューションズ", {"size": 1400, "bold": True, "color": WHITE}),
-              ("営業担当（あなた）", {"size": 1200, "color": WHITE})]),
+              ("営業 高橋（あなた）", {"size": 1200, "color": WHITE})]),
           fill=NAVY, prst="roundRect", anchor="ctr", inset=(180000, 45720, 91440, 45720))
     s.box(X0 + 2700000, 1120000, 1150000, 580000, para("提案", size=1300, bold=True, color=WHITE, align="ctr"),
           fill=BLUE, prst="rightArrow", anchor="ctr")
     s.box(X0 + 3950000, 1030000, W - 3950000, 760000,
-          ps([("みらい商事株式会社（架空・東京都）", {"size": 1400, "bold": True, "color": NAVY}),
-              ("営業企画部 佐伯課長「法人営業20名向けに生成AI活用研修をしたい」", {"size": 1150})]),
+          ps([("みらい商事株式会社（架空・東京都・全社約300名）", {"size": 1350, "bold": True, "color": NAVY}),
+              ("人材開発 佐藤様・営業企画 田中様「生成AIの利用状況に差がある」", {"size": 1150})]),
           fill=LIGHT, prst="roundRect", anchor="ctr", inset=(180000, 45720, 91440, 45720))
-    chips = [("Microsoft 365 利用・Copilot 一部試行中", PALE, TEXT), ("11月上旬に実施希望", PALE, TEXT),
-             ("予算目安100万円（承認前）", ORANGE_PALE, ORANGE), ("決裁者は窓口の上長・未特定", ORANGE_PALE, ORANGE)]
-    cws = [3300000, 1600000, 2120000, 2226000]
+    chips = [("対象：法人営業20名", PALE, TEXT), ("A案 60万円／B案 100万円", PALE, TEXT),
+             ("予算目安100万円（承認前）", ORANGE_PALE, ORANGE), ("利用可否・承認者などは未確定", ORANGE_PALE, ORANGE)]
+    cws = [1900000, 2500000, 2350000, 2496000]
     cx = X0
     for (t, f, c), cw_ in zip(chips, cws):
         s.box(cx, 1880000, cw_ - 80000, 380000, para(t, size=1050, bold=True, color=c, align="ctr"),
@@ -105,11 +105,11 @@ def batch1():
             ["2", "入力してはいけない情報を取り除く", "Copilot アプリ", "演習4"],
             ["3", "ヒアリングシートを作る", "Word", "演習5"],
             ["4", "商談の文字起こしから議事録を作る", "Word", "演習6"],
-            ["5", "お礼メール・社内報告・行動リストを作る", "Copilot アプリ／Word", "演習7・8"],
+            ["5", "議事録送付メール・社内報告・確認事項の一覧を作る", "Copilot アプリ／Word", "演習7・8"],
             ["6", "過去の研修実績を分析する", "Excel", "演習9"],
             ["7", "A案・B案の見積を試算する", "Excel", "演習10"],
-            ["8", "A案・B案の提案書を書く", "Word", "演習11"],
-            ["9", "提案スライドを作る", "PowerPoint", "演習12"],
+            ["8", "A案・B案の提案書と上長説明用の1枚を書く", "Word", "演習11"],
+            ["9", "上長説明用の1枚と提案スライドを作る", "PowerPoint", "演習12"],
             ["10", "自分の業務への応用を考える", "Word／Codex（任意）", "演習13・14"]]
     s.table(X0, 2360000, [800000, 4300000, 2700000, 1446000], rows, row_h=360000, size=1100,
             aligns=["ctr", "l", "l", "ctr"], fills={10: ORANGE_PALE})

@@ -16,8 +16,8 @@ from sales_assist.masking import mask, unmask
 from sales_assist.services import actions_to_csv, draft_email, generate_minutes, is_overdue
 
 TRANSCRIPT = Path(__file__).resolve().parents[2] / "materials" / "03_商談文字起こし_初回訪問.txt"
-TERMS = [("みらい商事株式会社", "COMPANY"), ("みらい商事", "COMPANY"), ("佐伯", "PERSON"),
-         ("大西", "PERSON"), ("高野", "PERSON")]
+TERMS = [("みらい商事株式会社", "COMPANY"), ("みらい商事", "COMPANY"), ("佐藤美和", "PERSON"), ("佐藤", "PERSON"),
+         ("田中淳", "PERSON"), ("田中", "PERSON")]
 
 
 # ステージ1：再起動しても商談が消えない ------------------------------------------
@@ -72,9 +72,9 @@ def test_mask_email_fullwidth():
 
 
 def test_mask_terms_longest_first_and_unmask():
-    r = mask("みらい商事株式会社の佐伯課長。みらい商事は東京。", TERMS)
-    assert "みらい商事" not in r.text and "佐伯" not in r.text
-    assert unmask(r.text, r.mapping) == "みらい商事株式会社の佐伯課長。みらい商事は東京。"
+    r = mask("みらい商事株式会社の佐藤美和です。隣に田中淳も同席。佐藤と田中です。", TERMS)
+    assert "みらい商事" not in r.text and "佐藤" not in r.text and "美和" not in r.text and "淳" not in r.text
+    assert unmask(r.text, r.mapping) == "みらい商事株式会社の佐藤美和です。隣に田中淳も同席。佐藤と田中です。"
 
 
 def test_dates_are_not_masked_as_phone():
@@ -90,9 +90,9 @@ class RecordingLLM(MockLLM):
 def test_prompt_sent_to_llm_is_masked():
     llm = RecordingLLM()
     meeting = {"id": 1, "customer": "みらい商事株式会社", "meeting_date": "2026-10-06",
-               "attendees": "佐伯課長", "memo": TRANSCRIPT.read_text(encoding="utf-8")}
+               "attendees": "佐藤様、田中様", "memo": TRANSCRIPT.read_text(encoding="utf-8")}
     generate_minutes(llm, meeting, TERMS)
-    for secret in ("080-4127-3395", "みらい商事", "佐伯", "高野"):
+    for secret in ("みらい商事", "佐藤", "田中"):
         assert secret not in llm.last_user
 
 
@@ -103,7 +103,6 @@ def test_email_has_no_placeholders():
     minutes = generate_minutes(MockLLM(), meeting, TERMS).minutes
     mail = draft_email(MockLLM(), minutes, TERMS, "顧客", "丁寧", "ELI 営業")
     assert "[PERSON_" not in mail["body"] and "[COMPANY_" not in mail["body"]
-    assert "高野" in mail["body"]
 
 
 # ステージ5：相対的な期限を具体的な日付にする ----------------------------------------
@@ -135,7 +134,8 @@ def test_minutes_actions_have_resolved_dates_and_names():
     result = generate_minutes(MockLLM(), meeting, TERMS)
     dues = {a["due_date"] for a in result.actions}
     assert {"2026-10-09", "2026-10-12", "2026-10-13"} <= dues
-    assert any(a["owner"] == "高野" for a in result.actions)
+    assert any(a["owner"] == "話者B" and a["due_date"] == "2026-10-13" for a in result.actions)
+    assert "[PERSON_" not in str(result.minutes) and "[COMPANY_" not in str(result.minutes)  # 記号が残っていない
 
 
 def test_actions_sorted_with_undated_last(tmp_path):
@@ -168,7 +168,7 @@ def test_overdue():
 
 # ステージ6：CSV を Excel で開いても文字化けしない ------------------------------------
 def test_csv_has_bom_for_excel():
-    data = actions_to_csv([{"customer": "みらい商事", "meeting_date": "2026-10-06", "owner": "高野",
+    data = actions_to_csv([{"customer": "みらい商事", "meeting_date": "2026-10-06", "owner": "佐藤",
                             "task": "リスト送付", "due_date": "2026-10-13", "due_text": "来週火曜", "status": "未着手"}])
     assert data.startswith(b"\xef\xbb\xbf")
     assert "リスト送付" in data.decode("utf-8-sig")
