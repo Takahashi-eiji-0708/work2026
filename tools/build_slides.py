@@ -1145,7 +1145,232 @@ def batch4():
     return slides
 
 
-BATCHES = [batch1, batch2, batch3, batch4]
+def batch5():
+    slides = []
+
+    # 演習7・8 ----------------------------------------------------------------------------
+    s = Slide("content", "演習7・8：議事録送付メール・社内報告・確認事項の一覧")
+    ex = [("演習7（20分）", "議事録と Next Action の送付メール", NAVY,
+           ["議事録を開いて、送付メールを依頼する（宛先：佐藤様、CC：田中様）", "未確定事項を、未確定と分かるように書かせる",
+            "金額・日付・曜日・社名の表記を確認する", "Word に貼り付けて保存（実際には送信しない）"]),
+          ("演習8（25分）", "社内報告・行動リスト・確認事項の一覧", BLUE,
+           ["上長への報告を「結論 → ポイント → 相談 → 次の一手」で作らせる", "受注確度は自分で決めて直す",
+            "行動リスト（期限は具体的な日付）を作る", "確認事項の一覧（未定は「未定」のまま）を作る"])]
+    half = (W - 230000) / 2
+    for i, (no, name, c, items) in enumerate(ex):
+        x = X0 + i * (half + 230000)
+        s.box(x, 1030000, half, 700000, ps([(no, {"size": 1150, "color": WHITE}), (name, {"size": 1400, "bold": True, "color": WHITE})]),
+              fill=c, prst="roundRect", anchor="ctr", inset=(200000, 45720, 150000, 45720))
+        s.box(x, 1810000, half, 2700000,
+              ps([(t, {"bullet": "num", "size": 1200, "line": 115000, "space_after": 500}) for t in items]),
+              fill=PALE, prst="roundRect", adj={"adj": 6000}, inset=(200000, 200000, 150000, 120000))
+    s.box(X0, 4700000, W, 1300000,
+          ps([("確認事項の一覧に入る3点（商談で高橋が挙げたもの）", {"size": 1250, "bold": True, "color": ORANGE, "space_after": 400}),
+              ("① 対象20名の Copilot 利用可否　② A案の場合の受講後のフォロー担当　③ 予算承認の状況", {"size": 1250}),
+              ("手順：03_演習ガイド「演習7」「演習8」／解答例：解答例_演習7_8_議事録送付メール_社内報告.docx", {"size": 1050, "color": GRAY})]),
+          fill=ORANGE_PALE, prst="roundRect", anchor="ctr", adj={"adj": 6000}, inset=(220000, 91440, 220000, 91440))
+    slides.append(s)
+
+    # Day1 振り返り ---------------------------------------------------------------------------
+    s = Slide("content", "Day 1 の振り返り")
+    s.text(X0, 1030000, W, 330000, para("今日できるようになったこと", size=1350, bold=True, color=NAVY))
+    done = [("調べる", "出典を開いて確認する"), ("守る", "A／B／C で判定し、マスキングする"),
+            ("まとめる", "文字起こしから議事録を作る"), ("伝える", "メール・社内報告・確認事項に書き分ける")]
+    cw = (W - 3 * 150000) / 4
+    for i, (h, b) in enumerate(done):
+        x = X0 + i * (cw + 150000)
+        s.box(x, 1420000, cw, 1100000,
+              ps([(h, {"size": 1500, "bold": True, "color": WHITE, "align": "ctr", "space_after": 300}),
+                  (b, {"size": 1100, "color": WHITE, "align": "ctr", "line": 112000})]),
+              fill=[NAVY, "2B6CA3", BLUE, "3A96D8"][i], prst="roundRect", anchor="ctr", inset=(100000, 45720, 100000, 45720))
+    s.text(X0, 2750000, W, 330000, para("1人3分で共有する", size=1350, bold=True, color=NAVY))
+    qs = ["一番の気付きは？", "明日から自分の仕事で使うことを1つ", "まだ不安なこと・分からないこと"]
+    for i, q in enumerate(qs):
+        y = 3150000 + i * 620000
+        s.circle_num(X0, y, 480000, i + 1)
+        s.box(X0 + 640000, y, W - 640000, 480000, para(q, size=1300), fill=PALE, anchor="ctr", inset=(200000, 0, 200000, 0))
+    s.box(X0, 5100000, W, 850000,
+          para("明日の朝は **セキュリティ確認クイズ（5問）** から始める。Day 2 は分析・概算・提案書・上長説明用の1枚を仕上げる。",
+               size=1250, line=115000, accent=NAVY),
+          fill=LIGHT, prst="roundRect", anchor="ctr", inset=(220000, 45720, 220000, 45720))
+    slides.append(s)
+
+    # Day2 の流れ ------------------------------------------------------------------------------
+    s = Slide("content", "Day 2 の流れ：提案一式を仕上げる")
+    flow = [("第6章", "Excel", "実績の分析\nA案・B案の概算"), ("第7章", "Word", "提案書\n上長説明用の1枚"),
+            ("第8章", "PowerPoint", "提案スライド"), ("第9章", "アプリ", "ELI Sales Assist\nの紹介"),
+            ("第10章", "応用", "自分の業務への\n応用プラン")]
+    sw = (W + 120000 * 4) / 5
+    for i, (ch, app, out) in enumerate(flow):
+        x = X0 + i * (sw - 120000)
+        s.box(x, 1100000, sw, 700000, ps([(ch, {"size": 1100, "color": WHITE, "align": "ctr"}), (app, {"size": 1350, "bold": True, "color": WHITE, "align": "ctr"})]),
+              fill=[NAVY, "2B6CA3", BLUE, ORANGE, ORANGE][i], prst="chevron" if i else "homePlate", anchor="ctr",
+              adj={"adj": 30000}, inset=(220000, 0, 150000, 0))
+        s.box(x + 120000, 1950000, sw - 360000, 1000000,
+              ps([(t, {"size": 1150, "align": "ctr", "line": 112000}) for t in out.split("\n")]),
+              fill=PALE if i < 3 else ORANGE_PALE, prst="roundRect", anchor="ctr", inset=(60000, 45720, 60000, 45720))
+    s.box(X0, 3250000, W, 1500000,
+          ps([("10/16（金）14:00 にみらい商事へ持っていくもの", {"size": 1350, "bold": True, "color": NAVY, "space_after": 500}),
+              ("A案・B案の提案書と概算 ／ 上長説明用の1枚 ／ 確認事項の一覧（Day 1 の演習8）", {"size": 1300, "bold": True}),
+              ("午後の第9・10章（パートB）では、Day 1〜2 で繰り返した作業をアプリにする考え方と、自分の業務への応用を考える。",
+               {"size": 1150, "color": GRAY, "line": 115000})]),
+          fill=LIGHT, prst="roundRect", anchor="ctr", adj={"adj": 6000}, inset=(250000, 91440, 250000, 91440))
+    s.box(X0, 4950000, W, 900000,
+          para("前日の成果物（議事録・メール・確認事項の一覧）がそろっていない人は、解答例を使って進めてよい。",
+               size=1200, line=115000),
+          fill=ORANGE_PALE, prst="roundRect", anchor="ctr", inset=(220000, 45720, 220000, 45720))
+    slides.append(s)
+
+    # 章扉 6 -------------------------------------------------------------------------------------
+    slides.append(Slide("section", "６．Excel × Copilot：分析と概算"))
+
+    # 6.1 準備 ---------------------------------------------------------------------------------------
+    s = Slide("content", "6.1 Excel で Copilot を使う前の準備")
+    prep = [("テーブルにする", "挿入 → テーブル。見出しは1行、結合セルは使わない"),
+            ("意味の分かる列名", "「列1」ではなく「満足度」「事後フォロー」など"),
+            ("OneDrive に保存", "自動保存をオンにする（ローカル保存では使えない場合がある）"),
+            ("品質を先に確認", "表記ゆれ・空欄を Copilot に聞いてから分析する")]
+    for i, (h, b) in enumerate(prep):
+        y = 1080000 + i * 900000
+        s.circle_num(X0, y + 60000, 520000, i + 1)
+        s.text(X0 + 680000, y, 4700000, 380000, para(h, size=1450, bold=True, color=NAVY))
+        s.text(X0 + 680000, y + 420000, 4700000, 420000, para(b, size=1200, line=115000))
+    rx = X0 + 5600000
+    rw = W - 5600000
+    s.box(rx, 1080000, rw, 3500000,
+          ps([("悪い例", {"size": 1300, "bold": True, "color": ORANGE, "space_after": 400}),
+              *[(t, {"bullet": "dot", "size": 1150, "line": 112000, "space_after": 300}) for t in
+                ("見出しが2行に分かれ、セルが結合されている", "「卸売」「卸売業」が混在している", "空欄を「-」や「なし」で埋めている",
+                 "ファイルがデスクトップに保存されている")],
+              ("→ Copilot が表を正しく読めず、集計がずれる", {"size": 1150, "bold": True, "color": ORANGE})]),
+          fill=ORANGE_PALE, prst="roundRect", adj={"adj": 6000}, inset=(200000, 180000, 150000, 100000))
+    s.box(X0, 4800000, W, 1100000,
+          ps([("使う素材", {"size": 1250, "bold": True, "color": NAVY, "space_after": 300}),
+              ("04_研修実績データ.xlsx（当社の2023〜2025年度の架空の実績160件）／05_見積単価表.xlsx（単価表・含まないもの・見積試算）",
+               {"size": 1150, "line": 115000})]),
+          fill=LIGHT, prst="roundRect", anchor="ctr", adj={"adj": 6000}, inset=(220000, 91440, 220000, 91440))
+    slides.append(s)
+
+    # 6.2 使い方 -------------------------------------------------------------------------------------
+    s = Slide("content", "6.2 Excel での Copilot の主な使い方")
+    rows = [["やりたいこと", "依頼の例"],
+            ["データの概要をつかむ", "「このデータから分かる傾向を3つ教えて」"],
+            ["データの品質を確認する", "「分析の前に直したほうがよい点（表記のゆれ、空欄など）はある？」"],
+            ["集計・比較", "「事後フォローの有無で、1か月後活用率の平均を比較して。件数も示して」"],
+            ["数式列の追加", "「受講者1人あたり受講料の列を追加して」"],
+            ["強調表示", "「満足度が4.5以上の行を強調して」"],
+            ["グラフ・ピボット", "「実施形式ごとの満足度をグラフにして」"],
+            ["数式の説明", "「この数式が何をしているか説明して」"],
+            ["文章の分類", "「自由記述を内容でグループ分けして、件数を数えて」"]]
+    s.table(X0, 1030000, [2700000, W - 2700000], rows, row_h=[400000] + [540000] * 8, size=1200, bold_cols=(0,),
+            fills={(2, 0): ORANGE_PALE})
+    s.text(X0, 5850000, W, 300000, para("オレンジの行（品質の確認）を、分析の最初に必ず行う。", size=1100, color=GRAY))
+    slides.append(s)
+
+    # 6.3 注意 ---------------------------------------------------------------------------------------
+    s = Slide("content", "6.3 分析結果を使うときの注意")
+    cards = [("検算する", "Copilot の集計は、ピボットテーブルや関数で自分でも確かめる"),
+             ("件数（n数）を見る", "平均の差だけで判断しない。件数が少ないと偶然の差かもしれない"),
+             ("傾向と効果を分ける", "「差がある」は傾向。他の要因が混ざっていることもあり、効果の証明ではない"),
+             ("お金の計算は一行ずつ", "見積の数式は Copilot に作らせ、人が意味を読んで確認する")]
+    cw = (W - 230000) / 2
+    for i, (h, b) in enumerate(cards):
+        x = X0 + (i % 2) * (cw + 230000)
+        y = 1080000 + (i // 2) * 1450000
+        s.box(x, y, cw, 1300000, fill=PALE, prst="roundRect", adj={"adj": 8000})
+        s.circle_num(x + 200000, y + 200000, 500000, i + 1)
+        s.text(x + 850000, y + 200000, cw - 1000000, 500000, para(h, size=1450, bold=True, color=NAVY), anchor="ctr")
+        s.text(x + 200000, y + 780000, cw - 400000, 480000, para(b, size=1150, line=115000))
+    s.box(X0, 4100000, W, 1850000,
+          ps([("商談の方針と同じ", {"size": 1350, "bold": True, "color": NAVY, "space_after": 500}),
+              ("「作業時間を測る場合は条件を揃えて実測し、削減時間をそのまま人件費削減や売上増には換算しません」", {"size": 1250, "bold": True}),
+              ("── 初回訪問での高橋の説明（佐藤様「社内でも数字の出し方は慎重にしたい」）", {"size": 1050, "color": GRAY, "space_after": 500}),
+              ("提案書に載せる数字は、**自分で検算し、傾向として控えめに書く**。", {"size": 1250, "accent": NAVY})]),
+          fill=LIGHT, prst="roundRect", anchor="ctr", adj={"adj": 6000}, inset=(250000, 91440, 250000, 91440))
+    slides.append(s)
+
+    # 6.4 概算の組み立て --------------------------------------------------------------------------------
+    s = Slide("content", "6.4 A案・B案の概算の組み立て")
+    s.text(X0, 1000000, W, 380000, para("研修部分は共通。違いは **追加支援（事前診断・活用フォロー）の有無** だけ。", size=1300, accent=NAVY))
+    unit = 5200000 / 1000000  # 100万円 = 5.2M EMU
+    bars = [("A案", [("集合研修（2日間）", 500000, NAVY), ("教材", 100000, "2B6CA3")], "600,000円（1名 30,000円）"),
+            ("B案", [("集合研修（2日間）", 500000, NAVY), ("教材", 100000, "2B6CA3"),
+                     ("事前診断", 200000, ORANGE), ("活用フォロー", 200000, "F0A04B")], "1,000,000円（1名 50,000円）")]
+    for i, (name, parts, total) in enumerate(bars):
+        y = 1600000 + i * 1150000
+        s.text(X0, y, 800000, 700000, para(name, size=1500, bold=True, color=NAVY), anchor="ctr")
+        x = X0 + 850000
+        for lab, amt, c in parts:
+            w_ = amt * unit
+            s.box(x, y, w_, 700000, ps([(lab, {"size": 950, "color": WHITE, "align": "ctr", "bold": True}),
+                                        (f"{amt // 10000}万円", {"size": 950, "color": WHITE, "align": "ctr"})]),
+                  fill=c, anchor="ctr", inset=(20000, 0, 20000, 0))
+            x += w_
+        s.text(x + 120000, y, W - (x - X0) - 120000, 700000, para(total, size=1200, bold=True, color=NAVY), anchor="ctr")
+    s.box(X0, 4050000, (W - 230000) / 2, 1900000,
+          ps([("B案の追加分（差額40万円）", {"size": 1250, "bold": True, "color": ORANGE, "space_after": 400}),
+              ("事前診断 20万円：事前の簡易アンケートと重点整理", {"bullet": "dot", "size": 1100, "line": 112000, "space_after": 300}),
+              ("活用フォロー 20万円：活用シート回収・整理、オンライン振り返り1回、担当者向け簡易報告", {"bullet": "dot", "size": 1100, "line": 112000})]),
+          fill=ORANGE_PALE, prst="roundRect", adj={"adj": 6000}, inset=(200000, 150000, 150000, 91440))
+    s.box(X0 + (W - 230000) / 2 + 230000, 4050000, (W - 230000) / 2, 1900000,
+          ps([("見積に含まないもの", {"size": 1250, "bold": True, "color": NAVY, "space_after": 400}),
+              ("会場・端末・必要なライセンス（みらい商事で手配）", {"bullet": "dot", "size": 1100, "space_after": 300}),
+              ("無制限の個別相談", {"bullet": "dot", "size": 1100, "space_after": 300}),
+              ("アプリ開発", {"bullet": "dot", "size": 1100}),
+              ("金額はすべて税抜。予算の目安100万円は承認前", {"size": 1000, "color": GRAY})]),
+          fill=LIGHT, prst="roundRect", adj={"adj": 6000}, inset=(200000, 150000, 150000, 91440))
+    slides.append(s)
+
+    # 演習9 ------------------------------------------------------------------------------------------------
+    s = Slide("content", "演習9：研修実績データの分析（40分）")
+    steps = [("品質を確認する", "表記ゆれ（卸売／情報通信）と空欄を見つけて直す"),
+             ("全体の傾向をつかむ", "「このデータから分かる傾向を3つ」"),
+             ("B案の説明材料を探す", "事後フォロー・事前診断の有無で比較（件数も）"),
+             ("検算する", "ピボットテーブルで同じ数字になるか確かめる"),
+             ("自由記述を分類する", "5つ程度のグループと件数"),
+             ("提案に使う一文を作る", "傾向として控えめに書く")]
+    for i, (h, b) in enumerate(steps):
+        x = X0 + (i % 2) * ((W + 200000) / 2)
+        y = 1080000 + (i // 2) * 950000
+        s.circle_num(x, y + 60000, 480000, i + 1)
+        s.text(x + 600000, y, W / 2 - 700000, 380000, para(h, size=1350, bold=True, color=NAVY))
+        s.text(x + 600000, y + 400000, W / 2 - 700000, 450000, para(b, size=1150, line=112000))
+    s.box(X0, 4050000, W, 1900000,
+          ps([("提案に使う一文の例", {"size": 1300, "bold": True, "color": NAVY, "space_after": 400}),
+              ("「当社の2023〜2025年度の実績160件では、受講後の活用フォローを行った研修の1か月後活用率は約62%で、"
+               "行わなかった研修（約43%）より高い傾向がある」", {"size": 1200, "line": 118000, "space_after": 400}),
+              ("「必ず○%上がる」とは書かない。実施条件が研修ごとに違うため、傾向であり効果の証明ではない。", {"size": 1100, "color": ORANGE})]),
+          fill=LIGHT, prst="roundRect", anchor="ctr", adj={"adj": 6000}, inset=(250000, 91440, 250000, 91440))
+    slides.append(s)
+
+    # 演習10 -----------------------------------------------------------------------------------------------
+    s = Slide("content", "演習10：A案・B案の概算見積（30分）")
+    rows = [["条件", "A案", "B案"], ["受講者数", "20名", "20名"], ["集合研修（2日間）", "1クラス", "1クラス"],
+            ["事前診断", "なし", "あり"], ["活用フォロー", "なし", "あり"]]
+    s.table(X0, 1080000, [2300000, 1500000, 1500000], rows, row_h=420000, size=1150, bold_cols=(0,), aligns=["l", "ctr", "ctr"])
+    steps = ["前提条件（B列＝A案、C列＝B案）を入力する", "数量と金額の数式を Copilot と作る",
+             "A案の合計を電卓で検算する", "差額と、予算の目安との差を表示する", "商談で伝えた金額と照合する"]
+    rx = X0 + 5600000
+    rw = W - 5600000
+    s.box(rx, 1080000, rw, 2600000,
+          ps([("手順", {"size": 1300, "bold": True, "color": NAVY, "space_after": 300})] +
+             [(t, {"bullet": "num", "size": 1100, "line": 112000, "space_after": 300}) for t in steps]),
+          fill=PALE, prst="roundRect", adj={"adj": 6000}, inset=(200000, 150000, 150000, 91440))
+    s.box(X0, 3350000, 5300000, 1350000,
+          ps([("照合する金額（商談で伝えたもの）", {"size": 1200, "bold": True, "color": ORANGE, "space_after": 300}),
+              ("A案 600,000円（1名 30,000円）", {"size": 1250, "bold": True}),
+              ("B案 1,000,000円（1名 50,000円）／差額 400,000円", {"size": 1250, "bold": True})]),
+          fill=ORANGE_PALE, prst="roundRect", anchor="ctr", adj={"adj": 6000}, inset=(200000, 91440, 150000, 91440))
+    s.box(X0, 4900000, W, 1050000,
+          ps([("よくある誤り", {"size": 1200, "bold": True, "color": NAVY, "space_after": 300}),
+              ("事前診断・活用フォローを A案にも入れてしまう／受講者数を変えたときにクラス数（1クラス20名まで）を変え忘れる", {"size": 1150, "line": 115000}),
+              ("素材：05_見積単価表.xlsx／解答例：解答例_演習10_見積試算.xlsx", {"size": 1050, "color": GRAY})]),
+          fill=LIGHT, prst="roundRect", anchor="ctr", adj={"adj": 6000}, inset=(220000, 91440, 220000, 91440))
+    slides.append(s)
+    return slides
+
+
+BATCHES = [batch1, batch2, batch3, batch4, batch5]
 
 
 def main():
