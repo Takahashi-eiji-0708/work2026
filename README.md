@@ -38,7 +38,7 @@ docs/        研修設計・テキスト・講師ガイドなど（Markdown が�
   08_応用ワークシート.md             … 第10章 業務応用ワークショップ用
   word/                             … 上記 Markdown から生成した配布用 .docx
 materials/   演習素材（すべて架空データ。Word/Excel/テキスト）
-codex/       Codex 段階開発プロンプト集（不具合修正ストーリー付き）
+codex/       Codex 段階開発プロンプト集（不具合修正ストーリー付き）と確認用データ（testdata/）
 app/         ELI Sales Assist の参照実装（講師デモ用・完成形）
 tools/       素材・配布物の生成スクリプト
 slides/      講義スライド（ELIテンプレート／フェーズ5で作成）

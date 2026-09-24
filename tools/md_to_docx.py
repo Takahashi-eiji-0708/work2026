@@ -1,4 +1,4 @@
-"""docs/*.md を配布用の Word ファイル（docs/word/*.docx）に変換する。
+"""docs/*.md と codex/*.md を配布用の Word ファイル（docs/word/*.docx）に変換する。
 
 対応する記法：見出し・段落・箇条書き・番号付きリスト・チェックボックス・表・コードブロック・引用・区切り線
     python tools/md_to_docx.py
@@ -89,7 +89,7 @@ def convert(md_path: Path, out_path: Path):
 
 def main():
     DST.mkdir(exist_ok=True)
-    for md in sorted(SRC.glob("*.md")):
+    for md in sorted(SRC.glob("*.md")) + sorted((ROOT / "codex").glob("*.md")):
         out = DST / (md.stem + ".docx")
         convert(md, out)
         print(out.relative_to(ROOT))
