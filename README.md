@@ -60,7 +60,7 @@ slides/      講義スライド（ELIテンプレート／フェーズ5で作成
 | 2 | 受講者テキスト・演習ガイド・演習素材（Word/Excel） | 完了 |
 | 3 | 講師ガイド・環境準備・テスト/アンケート・ガイドライン | 完了 |
 | 4 | ELI Sales Assist 参照実装＋Codex 段階開発プロンプト集 | 完了 |
-| 5 | 講義スライド（ELI PowerPoint テンプレート・全64枚予定） | 1〜10枚目 作成済み（`python tools/build_slides.py` で再生成） |
+| 5 | 講義スライド（ELI PowerPoint テンプレート・全64枚予定） | 1〜20枚目 作成済み（`python tools/build_slides.py` で再生成） |
 
 ## 再生成
 

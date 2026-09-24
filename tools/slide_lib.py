@@ -189,7 +189,7 @@ class Slide:
 
 def para_title(text, kind):
     """タイトルはレイアウトの色・サイズを継承し、フォントだけ Noto Sans JP を指定する。"""
-    return (f'<a:p><a:r><a:rPr lang="ja-JP" altLang="en-US" dirty="0">{FONT}</a:rPr>'
+    return (f'<a:p><a:r><a:rPr lang="ja-JP" altLang="en-US" cap="none" dirty="0">{FONT}</a:rPr>'
             f'<a:t>{escape(text)}</a:t></a:r></a:p>')
 
 
