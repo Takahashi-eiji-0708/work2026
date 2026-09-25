@@ -349,7 +349,7 @@ details.gen summary{cursor:pointer;font-size:13px;color:var(--sub)}
    addon マスタは ADDONS（追加演習スライドの10問）
    ============================================================ */
 const KEY = "training-dashboard-v6";
-const PACK_ID = "2026-09-06";
+const PACK_ID = "2026-09-25";
 const OLD_KEYS = ["training-dashboard-v5","training-dashboard-v4","training-dashboard-v3"];
 const TYPES = {lecture:"講義", exercise:"演習", break:"休憩", lunch:"昼"};
 const uid = () => Math.random().toString(36).slice(2, 9);
@@ -1672,6 +1672,19 @@ function mergeNewCourses(d){
   defaultState().courses.forEach(c => { if(!have.has(c.name)) d.courses.push(c); });
   if(!d.courses.some(c => c.id === d.activeId) && d.courses[0]) d.activeId = d.courses[0].id;
 }
+/* PACK_ID が変わったら、HTMLに定義済みの講座（名前で判定）をHTMLの内容で置き換える。
+   ブラウザ保存の古いコマ・教材リンクが残り続けるのを防ぐ。＋講座で作った講座は残す */
+function refreshBuiltinCourses(d){
+  const defs = new Map(defaultState().courses.map(c => [c.name, c]));
+  let changed = false;
+  d.courses.forEach(c => {
+    const def = defs.get(c.name);
+    if(!def) return;
+    c.blocks = def.blocks; c.base = def.base; c.start = def.start;
+    changed = true;
+  });
+  if(changed){ d.run = null; }
+}
 function load(){
   try{ OLD_KEYS.forEach(k => localStorage.removeItem(k)); }catch(e){ /* ignore */ }
   try{
@@ -1679,8 +1692,11 @@ function load(){
     if(raw){
       const d = JSON.parse(raw);
       if(d && Array.isArray(d.courses) && d.courses.length){
+        const savedPack = d.packId;
         portableize(d);
+        if(savedPack !== PACK_ID) refreshBuiltinCourses(d);
         mergeNewCourses(d);
+        if(savedPack !== PACK_ID){ try{ localStorage.setItem(KEY, JSON.stringify(d)); }catch(e){ /* file:// 制限等 */ } }
         return d;
       }
     }
