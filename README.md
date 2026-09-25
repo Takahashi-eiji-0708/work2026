@@ -50,7 +50,7 @@ materials/   演習素材（すべて架空データ。Word/Excel/テキスト�
 codex/       Codex 段階開発プロンプト集（不具合修正ストーリー付き）と確認用データ（testdata/）
 app/         ELI Sales Assist の参照実装（講師デモ用・完成形）
 tools/       素材・配布物の生成スクリプト
-slides/      講義スライド（ELIテンプレート・全168枚）
+slides/      講義スライド（ELIテンプレート・全169枚）
 ```
 
 ## 開発フェーズ
@@ -61,7 +61,7 @@ slides/      講義スライド（ELIテンプレート・全168枚）
 | 2 | 受講者テキスト・演習ガイド・演習素材（Word/Excel） | 完了 |
 | 3 | 講師ガイド・環境準備・テスト/アンケート・ガイドライン | 完了 |
 | 4 | ELI Sales Assist 参照実装＋Codex 段階開発プロンプト集 | 完了 |
-| 5 | 講義スライド（ELI PowerPoint テンプレート・全168枚。ミニ演習・解答を含む） | 完了（`python tools/build_slides.py` で再生成） |
+| 5 | 講義スライド（ELI PowerPoint テンプレート・全169枚。ミニ演習・解答を含む） | 完了（`python tools/build_slides.py` で再生成） |
 
 ## 再生成
 

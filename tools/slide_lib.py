@@ -100,7 +100,7 @@ class Slide:
         return self._id
 
     def box(self, x, y, w, h, paras="", fill=None, line=None, prst="rect", anchor="t",
-            inset=(91440, 45720, 91440, 45720), line_w=12700, shadow=False, adj=None):
+            inset=(91440, 45720, 91440, 45720), line_w=12700, shadow=False, adj=None, rot=0):
         sid = self.next_id()
         fill_xml = f'<a:solidFill><a:srgbClr val="{fill}"/></a:solidFill>' if fill else "<a:noFill/>"
         line_xml = (f'<a:ln w="{line_w}"><a:solidFill><a:srgbClr val="{line}"/></a:solidFill></a:ln>'
@@ -109,10 +109,12 @@ class Slide:
         eff = ('<a:effectLst><a:outerShdw blurRad="50800" dist="19050" dir="5400000" algn="t" rotWithShape="0">'
                '<a:srgbClr val="000000"><a:alpha val="18000"/></a:srgbClr></a:outerShdw></a:effectLst>') if shadow else ""
         l, t, r, b = inset
+        rot_attr = f' rot="{int(rot * 60000)}"' if rot else ""
         txbox = ' txBox="1"' if not fill and not line and prst == "rect" else ""
         self.shapes.append(
             f'<p:sp><p:nvSpPr><p:cNvPr id="{sid}" name="Shape {sid}"/><p:cNvSpPr{txbox}/><p:nvPr/></p:nvSpPr>'
-            f'<p:spPr><a:xfrm><a:off x="{int(x)}" y="{int(y)}"/><a:ext cx="{int(w)}" cy="{int(h)}"/></a:xfrm>'
+            f'<p:spPr><a:xfrm{rot_attr}><a:off x="{int(x)}" y="{int(y)}"/>'
+            f'<a:ext cx="{int(w)}" cy="{int(h)}"/></a:xfrm>'
             f'<a:prstGeom prst="{prst}"><a:avLst>{av}</a:avLst></a:prstGeom>{fill_xml}{line_xml}{eff}</p:spPr>'
             f'<p:txBody><a:bodyPr wrap="square" lIns="{l}" tIns="{t}" rIns="{r}" bIns="{b}" anchor="{anchor}" rtlCol="0">'
             f'<a:noAutofit/></a:bodyPr><a:lstStyle/>{paras or para("")}</p:txBody></p:sp>')

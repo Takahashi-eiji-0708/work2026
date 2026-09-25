@@ -81,6 +81,33 @@ def batch1():
               fill=f, prst="roundRect", anchor="ctr")
     slides.append(s)
 
+    # アイスブレイク ---------------------------------------------------------------
+    s = Slide("content", "アイスブレイク（1分）：あなたの現在地を教えてください")
+    s.text(X0, 1000000, W, 380000, para("チャットまたは口頭で1つだけ。今の自分に近いものを選ぶ（選んだ理由をひとこと添えてもよい）。",
+                                        size=1300, color=GRAY))
+    steps = [("A", "生成AIを\nほぼ使っていない", "E1E6EC", "5B6B7F", NAVY),
+             ("B", "私用や試しで、\n少し触った", "BACBDD", "2B6CA3", NAVY),
+             ("C", "仕事で月に\n数回使う", "7F9DBE", WHITE, WHITE),
+             ("D", "仕事で週に\n何度も使う", "2C4766", WHITE, WHITE)]
+    base = 5650000
+    sw, gap = 2150000, 80000
+    for i, (k, t, c, kc, tc) in enumerate(steps):
+        h = 1500000 + i * 550000
+        x = X0 + 150000 + i * (sw + gap)
+        s.box(x, base - h, sw, h, fill=c, prst="roundRect", adj={"adj": 7000}, shadow=True)
+        s.box(x + sw / 2 - 300000, base - h + 220000, 600000, 600000, para(k, size=2000, bold=True, color=c, align="ctr"),
+              fill=kc if kc != WHITE else WHITE, prst="ellipse", anchor="ctr", inset=(0, 0, 0, 0))
+        s.text(x + 60000, base - h + 900000, sw - 120000, 800000,
+               ps([(u, {"size": 1400, "bold": True, "color": tc, "align": "ctr"}) for u in t.split("\n")]), anchor="t")
+    # 右上がりの矢印（成長の方向）
+    import math
+    x1, y1, x2, y2 = X0 + 400000, 3750000, X0 + 8800000, 2050000
+    length = math.hypot(x2 - x1, y2 - y1)
+    s.box((x1 + x2 - length) / 2, (y1 + y2) / 2 - 90000, length, 180000, fill=ORANGE, prst="rightArrow",
+          rot=-math.degrees(math.atan2(y1 - y2, x2 - x1)), adj={"adj1": 40000, "adj2": 90000})
+    s.box(X0, 5750000, W, 350000, para("どこからでも大丈夫。2日間で1段ずつ上がることを目指します。", size=1200, bold=True, color=NAVY, align="ctr"))
+    slides.append(s)
+
     # 4 研修ストーリー -----------------------------------------------------------
     s = Slide("content", "研修ストーリー：ELIソリューションズの営業として提案する")
     s.box(X0, 1030000, 2600000, 760000,
