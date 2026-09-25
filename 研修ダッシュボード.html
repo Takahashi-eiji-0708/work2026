@@ -349,7 +349,7 @@ details.gen summary{cursor:pointer;font-size:13px;color:var(--sub)}
    addon マスタは ADDONS（追加演習スライドの10問）
    ============================================================ */
 const KEY = "training-dashboard-v6";
-const PACK_ID = "2026-09-25.2";
+const PACK_ID = "2026-09-25.3";
 const OLD_KEYS = ["training-dashboard-v5","training-dashboard-v4","training-dashboard-v3"];
 const TYPES = {lecture:"講義", exercise:"演習", break:"休憩", lunch:"昼"};
 const uid = () => Math.random().toString(36).slice(2, 9);
@@ -1082,107 +1082,6 @@ const SC_DAY2 = [
 ];
 
 /* ============================================================
-   生成AI営業実践（45枚版・2日間・09:30–17:00）
-   出典：「スライドと時間割の対応（講師用）」＋ 研修スライド全45枚
-   説明＝講義とその場の短い問いかけ。実演＝操作または明示した出力例の説明。
-   個人＝受講者の作業。レビュー＝ペア確認と全体解説。休憩は研修時間に含めない。
-   この TT が Day1／Day2 両講座の元データ。ttBlocks() がコマへ展開する。
-   検算：1日目＝実研修360分＋昼食60分＋休憩30分＝450分（9:30〜17:00）。
-         2日目＝午前180分＋午後180分＋昼食60分＋休憩30分＝450分。実研修 合計720分。
-         スライド30のみ翌朝に3分の再説明。各枠の講義時間は該当スライドの説明時間合計と一致。
-   ============================================================ */
-const AI45_BASE = "教材/生成AI営業実践(45枚版)/";
-const DECK_FILE = "04_研修スライド(45枚).pptx";
-const TT_MD = "02_スライドと時間割の対応(講師用).md";
-const TT_FALLBACK = "利用不能の場合：架空資料、フェーズ2の講師用完成例、通常のOfficeへ切り替える。認証情報を共有しない。Copilotの画面・ファイル参照・生成操作は承認済みの研修環境で事前に検証する。アプリ枠は講師用出力例を用い、動作済み画面として説明しない。";
-
-const TT = [
- {k:"D1-01", day:"1日目", t:"09:30–09:50", min:20, sl:"1–2",      exp:7,  demo:0,  solo:5,  rev:8,  title:"導入・事前診断",
-  d:"問題集の演習1の五場面にまず5分で回答。ペア5分・全体3分で迷いを共有。後の演習1で再検討する。"},
- {k:"D1-02", day:"1日目", t:"09:50–10:35", min:45, sl:"3–7",      exp:20, demo:8,  solo:12, rev:5,  title:"生成AIの基本",
-  d:"実演8分：同一商談メモの一段落で依頼を改善。個人12分：依頼文と出力の根拠を点検。レビュー5分。"},
- {k:"D1-03", day:"1日目", t:"10:45–11:35", min:50, sl:"8–13",     exp:18, demo:3,  solo:17, rev:12, title:"安全判断・演習1",
-  d:"実演3分：架空の入力可否例。個人17分：五場面の理由を作成。ペア8分・講師解説4分。"},
- {k:"D1-04", day:"1日目", t:"11:35–12:20", min:45, sl:"14–18",    exp:20, demo:5,  solo:10, rev:10, title:"Copilotと他サービス",
-  d:"実演5分：承認済みアカウント・必要機能の確認箇所。個人10分：学習と保存の違いを資料で確認。ペア5分・解説5分。管理者操作なし。"},
- {k:"D1-05", day:"1日目", t:"13:20–14:10", min:50, sl:"19–23",    exp:15, demo:5,  solo:20, rev:10, title:"課題整理・演習2",
-  d:"実演5分：一段落の三列整理。個人20分：整理表と追加質問3つ。ペア6分・解説4分。"},
- {k:"D1-06", day:"1日目", t:"14:20–15:30", min:70, sl:"24–27",    exp:14, demo:10, solo:30, rev:16, title:"Excel比較・演習3",
-  d:"実演10分：合計と一人当たりの数式。個人30分：比較・推薦条件。ペア10分・解説6分。"},
- {k:"D1-07", day:"1日目", t:"15:40–16:40", min:60, sl:"28–29",    exp:8,  demo:10, solo:32, rev:10, title:"Word骨子・演習4前半",
-  d:"実演10分：一段落の骨子と根拠。個人32分：Word1〜2ページ。ペア6分・講師整理4分。"},
- {k:"D1-08", day:"1日目", t:"16:40–17:00", min:20, sl:"30",       exp:3,  demo:0,  solo:7,  rev:10, title:"振り返り",
-  d:"個人7分：保存と自己点検。ペア6分・講師まとめ4分。"},
- {k:"D2-01", day:"2日目", t:"09:30–09:45", min:15, sl:"30（再掲）", exp:3,  demo:0,  solo:7,  rev:5,  title:"前日の復習",
-  d:"個人7分：Wordを開き根拠と未確認事項を確認。ペア3分・全体2分。"},
- {k:"D2-02", day:"2日目", t:"09:45–10:55", min:70, sl:"31–32",    exp:8,  demo:10, solo:37, rev:15, title:"PPT作成・演習4後半",
-  d:"実演10分：骨子から一枚へ転記し簡潔化。個人37分：5枚作成。ペア10分・全体5分。"},
- {k:"D2-03", day:"2日目", t:"11:05–12:05", min:60, sl:"33–34",    exp:8,  demo:0,  solo:12, rev:40, title:"提案レビュー",
-  d:"ペア40分：交代して説明各8分・指摘各8分・相違点確認8分。個人12分：最終修正・提出。"},
- {k:"D2-04", day:"2日目", t:"12:05–12:40", min:35, sl:"35–36",    exp:7,  demo:5,  solo:10, rev:13, title:"商談後対応・理解確認",
-  d:"実演5分：合意済みとAI提案を分離。個人10分：既存PPTの次の行動を修正。レビュー8分＋理解確認5問5分。"},
- {k:"D2-05", day:"2日目午後", t:"13:40–14:10", min:30, sl:"37–38", exp:6,  demo:15, solo:5,  rev:4,  title:"アプリ紹介",
-  d:"出力例15分：同じ商談メモから議事録・下書き・対応一覧を順に確認（実機未確認）。個人5分：人の確認箇所を印す。全体4分。"},
- {k:"D2-06", day:"2日目午後", t:"14:10–14:40", min:30, sl:"39–40", exp:8,  demo:5,  solo:12, rev:5,  title:"AI処理と人の確認",
-  d:"実演5分：不明な担当・期限を要確認へ戻す。個人12分：生成例を照合。ペア3分・全体2分。"},
- {k:"D2-07", day:"2日目午後", t:"14:50–15:20", min:30, sl:"41",    exp:5,  demo:0,  solo:20, rev:5,  title:"業務整理・演習5",
-  d:"個人20分：構想シート前半3項目。ペア3分・全体2分。"},
- {k:"D2-08", day:"2日目午後", t:"15:20–16:00", min:40, sl:"42",    exp:5,  demo:5,  solo:25, rev:5,  title:"構想作成・演習5",
-  d:"実演5分：人の確認と指標の書き方。個人25分：後半3項目を加えて1枚。全体5分。"},
- {k:"D2-09", day:"2日目午後", t:"16:10–16:40", min:30, sl:"43",    exp:3,  demo:0,  solo:0,  rev:27, title:"ペア共有",
-  d:"ペア22分：説明・質問を交代各8分、相互修正6分。全体5分。"},
- {k:"D2-10", day:"2日目午後", t:"16:40–17:00", min:20, sl:"44–45", exp:5,  demo:0,  solo:10, rev:5,  title:"実践計画",
-  d:"個人10分：6項目の計画を手元に記す。ペア3分・全体2分。新規提出なし。"}
-];
-
-const TT_BREAKS = [
- {day:"1日目", t:"10:35–10:45", min:10, lunch:false},
- {day:"1日目", t:"12:20–13:20", min:60, lunch:true},
- {day:"1日目", t:"14:10–14:20", min:10, lunch:false},
- {day:"1日目", t:"15:30–15:40", min:10, lunch:false},
- {day:"2日目", t:"10:55–11:05", min:10, lunch:false},
- {day:"2日目", t:"12:40–13:40", min:60, lunch:true},
- {day:"2日目", t:"14:40–14:50", min:10, lunch:false},
- {day:"2日目", t:"16:00–16:10", min:10, lunch:false}
-];
-
-/* "09:50–10:35" → 開始 "09:50" ／ 終了 "10:35" */
-const ttStart = t => String(t).split(/[–-]/)[0];
-const ttEnd   = t => String(t).split(/[–-]/)[1];
-
-/* 時間割 → コマ配列。休憩は「開始時刻＝直前の枠の終了時刻」で挟む */
-function ttBlocks(dp){
-  const dayName = dp === "D1" ? "1日目" : "2日目";
-  const rows = TT.filter(r => r.k.startsWith(dp + "-"));
-  const brks = TT_BREAKS.filter(b => b.day === dayName);
-  const out = [];
-  rows.forEach((r, i) => {
-    const works = [];
-    if(r.demo) works.push(`実演 ${r.demo}分`);
-    if(r.solo) works.push(`個人 ${r.solo}分`);
-    if(r.rev)  works.push(`レビュー ${r.rev}分`);
-    out.push(B({
-      title: `${r.k}　${r.title}`,
-      type: (r.solo + r.rev) > (r.exp + r.demo) ? "exercise" : "lecture",
-      min: r.min,
-      pages: `スライド ${r.sl}`,
-      refs: [{label:"研修スライド", file:DECK_FILE, note:`p${r.sl}`},
-             {label:"時間割（講師用）", file:TT_MD, note:r.k}],
-      works,
-      tips: [r.d, `内訳：説明${r.exp}／実演${r.demo}／個人${r.solo}／レビュー${r.rev}分（計${r.min}分）`]
-              .concat(i === 0 ? [TT_FALLBACK] : [])
-    }));
-    const b = brks.find(x => ttStart(x.t) === ttEnd(r.t));
-    if(b) out.push(b.lunch
-      ? B({title:"昼食", type:"lunch", min:b.min, at:ttStart(b.t)})
-      : B({title:`休憩（${b.t}）`, type:"break", min:b.min}));
-  });
-  return out;
-}
-const AI45_DAY1 = ttBlocks("D1");
-const AI45_DAY2 = ttBlocks("D2");
-
-/* ============================================================
    生成AIセキュア活用（169枚版・2日間・09:30–17:00）
    出典：01_カリキュラム・タイムテーブル.md ＋ 研修スライド全169枚
    ストーリー：ELIソリューションズ（自社）× みらい商事（顧客）で提案一式を仕上げる
@@ -1379,8 +1278,6 @@ function defaultState(){
     mk("SE外部・内部設計 Day1（オンライン設計①）", SE_DAY1, "09:30", SE_BASE),
     mk("SE外部・内部設計 Day2（DB設計・オンライン設計②）", SE_DAY2, "09:30", SE_BASE),
     mk("SE外部・内部設計 Day3（バッチ設計・内部設計）", SE_DAY3, "09:30", SE_BASE),
-    mk("生成AI営業実践 45枚版 Day1（基本・安全・Office演習）", AI45_DAY1, "09:30", AI45_BASE),
-    mk("生成AI営業実践 45枚版 Day2（提案レビュー・アプリ・構想）", AI45_DAY2, "09:30", AI45_BASE),
     mk("生成AIセキュア活用 169枚版 Day1（基礎・セキュリティ・Word）", A9_DAY1, "09:30", AI169_BASE),
     mk("生成AIセキュア活用 169枚版 Day2（Excel・提案書・アプリ応用）", A9_DAY2, "09:30", AI169_BASE),
     mk("SE共通スキル Day1（体制・運用・性能）", SC_DAY1, "09:30", SC_BASE),
@@ -1397,7 +1294,6 @@ function knownBaseFor(s){
   const t = String(s||"");
   if(/DB設計/.test(t)) return DB_BASE;
   if(/SE外部|内部設計/.test(t)) return SE_BASE;
-  if(/45枚版/.test(t)) return AI45_BASE;
   if(/169枚版/.test(t)) return AI169_BASE;
   if(/SE共通スキル/.test(t)) return SC_BASE;
   return "";
@@ -1454,6 +1350,8 @@ function portableize(d){
 /* defaultState() に後から追加されたコース（名前で判定）を、保存済みデータへ差分反映する */
 function mergeNewCourses(d){
   const drop = new Set([
+    "生成AI営業実践 45枚版 Day1（基本・安全・Office演習）",
+    "生成AI営業実践 45枚版 Day2（提案レビュー・アプリ・構想）",
     "ソリューション営業 生成AIセキュア活用 Day1（デモA〜C）",
     "ソリューション営業 生成AIセキュア活用 Day2（コックピット・セキュア）",
     "生成AIセキュア活用実践 Day1（安全判断・顧客理解）",
