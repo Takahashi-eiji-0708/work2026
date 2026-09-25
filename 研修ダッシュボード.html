@@ -215,7 +215,7 @@ details.gen summary{cursor:pointer;font-size:13px;color:var(--sub)}
 
 <header>
   <h1>研修ダッシュボード</h1>
-  <span class="pack" title="このフォルダごとコピーすれば、どのPCでも同じ初期講座で使えます">パッケージ</span>
+  <span class="pack" id="packVer" title="このフォルダごとコピーすれば、どのPCでも同じ初期講座で使えます">パッケージ</span>
   <select id="courseSel" title="担当講座"></select>
   <button class="btn sm ghost" id="btnNewCourse">＋講座</button>
   <button class="btn sm ghost" id="btnDelCourse">削除</button>
@@ -1595,6 +1595,7 @@ function defaultState(){
 }
 
 let S = load(), peek = null;   // peek = タイムラインで下見中のindex
+document.getElementById("packVer").textContent = "パッケージ " + PACK_ID;
 
 /* 他PCの絶対パスを、このパッケージ内の相対パスへ直す */
 function knownBaseFor(s){
