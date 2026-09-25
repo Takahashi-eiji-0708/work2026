@@ -69,6 +69,8 @@ slides/      講義スライド（ELIテンプレート・全169枚）
 pip install openpyxl python-docx
 python tools/build_materials.py   # materials/ の Word・Excel 素材を生成
 python tools/md_to_docx.py        # docs/*.md → docs/word/*.docx
+python tools/build_slides.py      # 講義スライド（slides/）
+python tools/build_student_package.py  # 受講者配布用 ZIP（dist/。解答スライド・解答例・講師用資料を除く）
 ```
 
 > **注意**：Copilot の機能名・画面・利用上限は頻繁に変わります。本教材は 2026年9月時点の想定で作成しています。
