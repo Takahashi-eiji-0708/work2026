@@ -1,0 +1,2342 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>研修ダッシュボード</title>
+<style>
+/* ============================ トークン ============================ */
+:root{
+  color-scheme: dark;
+  --bg:#0f172a; --panel:#1e293b; --panel-2:#172033; --line:#334155; --line-hi:#475569;
+  --muted:#64748b; --sub:#94a3b8; --body:#cbd5e1; --fg:#f1f5f9;
+  --rose:#f43f5e; --rose-t:#fda4af;
+  --amber:#fbbf24; --amber-t:#fcd34d;
+  --sky:#38bdf8; --sky-t:#7dd3fc;
+  --indigo:#818cf8; --indigo-t:#a5b4fc;
+  --emerald:#34d399; --emerald-t:#6ee7b7;
+  --fuchsia:#e879f9; --fuchsia-t:#f0abfc;
+  --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,"Courier New",monospace;
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%}
+body{
+  background:var(--bg); color:var(--fg);
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Hiragino Sans","Noto Sans JP",Meiryo,sans-serif;
+  font-size:15px; line-height:1.6;
+}
+button,input,select{font-family:inherit;font-size:inherit}
+:focus-visible{outline:2px solid var(--sub);outline-offset:2px}
+
+/* ============================ 共通パーツ ============================ */
+.btn{
+  border:1px solid var(--line-hi); background:var(--panel); color:var(--body);
+  border-radius:8px; padding:7px 13px; cursor:pointer; transition:.12s;
+}
+.btn:hover{background:var(--line);color:var(--fg)}
+.btn.primary{background:var(--emerald);border-color:var(--emerald);color:#052e1c;font-weight:600}
+.btn.primary:hover{filter:brightness(1.1)}
+.btn.warn{background:var(--amber);border-color:var(--amber);color:#3b2600;font-weight:600}
+.btn.warn:hover{filter:brightness(1.1)}
+.btn.ghost{background:transparent}
+.btn.sm{padding:4px 9px;font-size:13px;border-radius:6px}
+.btn.xs{padding:2px 8px;font-size:12px;border-radius:6px}
+.btn:disabled{opacity:.35;cursor:not-allowed}
+input,select{
+  background:var(--panel-2); border:1px solid var(--line); color:var(--fg);
+  border-radius:6px; padding:6px 9px;
+}
+.lbl{font-size:10px;font-weight:500;letter-spacing:.15em;text-transform:uppercase;color:var(--muted)}
+
+/* ============================ レイアウト ============================ */
+header{
+  display:flex;align-items:center;gap:14px;flex-wrap:wrap;
+  padding:14px 22px;border-bottom:1px solid var(--line);background:var(--panel-2);
+}
+header h1{margin:0;font-size:17px;font-weight:600;letter-spacing:-.01em;white-space:nowrap}
+header .pack{font-size:11px;color:var(--sub);border:1px solid var(--line-hi);border-radius:99px;padding:2px 8px;white-space:nowrap}
+header .clock{font-family:var(--mono);font-size:22px;margin-left:auto}
+.spacer{flex:1}
+
+.main{display:grid;grid-template-columns:minmax(380px,1fr) minmax(440px,560px);gap:20px;padding:20px 22px;align-items:start}
+@media (max-width:1040px){.main{grid-template-columns:1fr}}
+
+.card{border:1px solid var(--line);border-radius:14px;background:var(--panel);padding:18px}
+.card h2{margin:0 0 14px;font-size:12px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--sub)}
+
+/* ============================ サマリー ============================ */
+.summary{display:flex;gap:26px;flex-wrap:wrap;margin-bottom:14px}
+.stat .num{font-family:var(--mono);font-size:22px;line-height:1.2}
+.stat.ahead .num{color:var(--emerald-t)}
+.stat.behind .num{color:var(--rose-t)}
+.stat.ontime .num{color:var(--fg)}
+
+/* ============================ タイムライン ============================ */
+.tl{display:flex;flex-direction:column;gap:5px}
+.row{
+  display:grid;grid-template-columns:56px 56px 1fr 46px 50px;gap:9px;align-items:center;
+  padding:8px 11px;border:1px solid transparent;border-radius:9px;background:var(--panel-2);cursor:pointer;
+}
+.row:hover{border-color:var(--line-hi)}
+.row .plan,.row .proj{font-family:var(--mono);font-size:13px}
+.row .plan{color:var(--muted)}
+.row .proj{color:var(--sub)}
+.row .ttl{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.row .ttl .pg{font-family:var(--mono);font-size:11px;color:var(--muted);margin-left:8px}
+.row .min{font-family:var(--mono);font-size:13px;color:var(--sub);text-align:right}
+.row .tag{font-size:10px;letter-spacing:.06em;padding:2px 6px;border-radius:99px;border:1px solid var(--line-hi);color:var(--muted);text-align:center}
+.row.t-lecture .tag{color:var(--sky-t);border-color:var(--sky)}
+.row.t-exercise .tag{color:var(--fuchsia-t);border-color:var(--fuchsia)}
+.row.t-break .tag{color:var(--amber-t);border-color:var(--amber)}
+.row.t-lunch .tag{color:var(--emerald-t);border-color:var(--emerald)}
+.row.done{opacity:.42}
+.row.done .ttl{text-decoration:line-through}
+.row.now{border-color:var(--sky);background:#0d2438;box-shadow:0 0 0 1px var(--sky) inset}
+.row.now .plan,.row.now .proj{color:var(--sky-t)}
+.row.sel{border-color:var(--indigo)}
+.row .proj.late{color:var(--rose-t)}
+.row .proj.early{color:var(--emerald-t)}
+
+/* ============================ 実行パネル ============================ */
+.now-title{font-size:20px;font-weight:600;margin:0 0 2px}
+.now-sub{font-size:13px;color:var(--muted);margin:0 0 12px;font-family:var(--mono)}
+.big{font-family:var(--mono);font-size:72px;line-height:1;letter-spacing:-.03em;font-weight:500}
+.big.warn5{color:var(--amber)}
+.big.warn1,.big.over{color:var(--rose)}
+.bar{height:6px;border-radius:99px;background:var(--line);overflow:hidden;margin:16px 0 14px}
+.bar > i{display:block;height:100%;background:var(--sky);transition:width .3s linear}
+.bar.warn5 > i{background:var(--amber)}
+.bar.warn1 > i,.bar.over > i{background:var(--rose)}
+.ctrl{display:flex;gap:8px;flex-wrap:wrap;margin-top:6px}
+.next-up{margin-top:14px;padding-top:12px;border-top:1px solid var(--line);font-size:13px;color:var(--sub)}
+.next-up b{color:var(--body);font-weight:500}
+
+/* ============================ L2 教材パネル ============================ */
+.mat{margin-top:16px;border-top:1px solid var(--line);padding-top:14px}
+.mat .sec{margin-bottom:14px}
+.mat .sec:last-child{margin-bottom:0}
+.mat .hd{font-size:10px;font-weight:600;letter-spacing:.14em;color:var(--muted);margin-bottom:6px}
+.chips{display:flex;gap:6px;flex-wrap:wrap}
+.chip{
+  display:inline-flex;align-items:center;gap:6px;text-decoration:none;
+  border:1px solid var(--line-hi);border-radius:7px;padding:4px 10px;
+  font-size:13px;color:var(--body);background:var(--panel-2);cursor:pointer;
+}
+.chip:hover{background:var(--line);color:var(--fg)}
+.chip .pg{font-family:var(--mono);font-size:12px;color:var(--sky-t)}
+.chip.work{border-color:var(--fuchsia);color:var(--fuchsia-t)}
+.tips{margin:0;padding-left:18px;font-size:13px;color:var(--sub)}
+.tips li{margin:2px 0}
+.addon{
+  border:1px solid var(--line);border-left:3px solid var(--fuchsia);border-radius:8px;
+  background:var(--panel-2);padding:9px 12px;margin-bottom:6px;
+}
+.addon .t{font-size:14px;font-weight:600;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.addon .t .no{font-family:var(--mono);font-size:12px;color:var(--fuchsia-t);border:1px solid var(--fuchsia);border-radius:99px;padding:0 7px}
+.addon .t .mm{font-family:var(--mono);font-size:12px;color:var(--sub);margin-left:auto}
+.addon .a{font-size:12.5px;color:var(--sub);margin-top:3px}
+.addon .a b{color:var(--sky-t);font-weight:500;font-family:var(--mono)}
+.addon .acts{display:flex;gap:6px;margin-top:7px}
+.empty{font-size:13px;color:var(--muted)}
+
+/* ============================ 編集 ============================ */
+.edit{margin-top:20px}
+.edit .row{grid-template-columns:1fr 60px 92px auto;cursor:default}
+.edit input[type=text]{width:100%}
+.tools{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:12px}
+details.gen{margin-top:14px;border:1px solid var(--line);border-radius:10px;padding:12px 14px;background:var(--panel-2)}
+details.gen summary{cursor:pointer;font-size:13px;color:var(--sub)}
+.gen-grid{display:flex;gap:10px;flex-wrap:wrap;align-items:end;margin-top:12px}
+.gen-grid label{display:flex;flex-direction:column;gap:4px}
+.gen-grid input{width:92px}
+
+/* ============================ ネタ帳 ============================ */
+.neta{border:1px solid var(--line);border-left:3px solid var(--indigo);border-radius:8px;
+  background:var(--panel-2);padding:0;margin-bottom:6px;overflow:hidden}
+.neta > summary{cursor:pointer;padding:9px 12px;list-style:none;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.neta > summary::-webkit-details-marker{display:none}
+.neta > summary::before{content:"▶";font-size:10px;color:var(--indigo-t);transition:.15s}
+.neta[open] > summary::before{transform:rotate(90deg)}
+.neta .nt{font-size:14px;font-weight:600}
+.neta .nm{font-family:var(--mono);font-size:12px;color:var(--sub);margin-left:auto}
+.neta .body{padding:0 12px 12px 12px;border-top:1px solid var(--line)}
+.neta .hook{font-size:13.5px;color:var(--indigo-t);margin:10px 0 8px;font-weight:500}
+.neta ul{margin:0;padding-left:18px;font-size:13px;color:var(--body)}
+.neta ul li{margin:3px 0}
+.neta .use{font-size:12.5px;color:var(--sub);margin-top:9px;padding-top:8px;border-top:1px dashed var(--line)}
+.neta .src{margin-top:7px;display:flex;gap:6px;flex-wrap:wrap}
+.neta .src a{font-size:12px;color:var(--sky-t);text-decoration:none;border-bottom:1px dotted var(--sky)}
+.neta .src a:hover{color:var(--fg)}
+
+#book{display:none;position:fixed;inset:0;background:rgba(15,23,42,.94);z-index:40;overflow:auto;padding:32px 20px}
+#book.on{display:block}
+#book .inner{max-width:840px;margin:0 auto}
+#book .bar2{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:16px}
+#book h3{margin:0;font-size:18px}
+#book input[type=search]{flex:1;min-width:180px}
+
+/* ============================ 資料から自動生成モーダル ============================ */
+#genModal{display:none;position:fixed;inset:0;background:rgba(15,23,42,.94);z-index:40;overflow:auto;padding:32px 20px}
+#genModal.on{display:block}
+#genModal .inner{max-width:760px;margin:0 auto}
+#genModal .bar2{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:14px}
+#genModal h3{margin:0;font-size:18px}
+.genNote{font-size:12.5px;color:var(--sub);line-height:1.6;background:var(--panel-2);border:1px solid var(--line);border-radius:8px;padding:10px 12px;margin-bottom:14px}
+.gen-grid label .lbl{font-size:11px;color:var(--muted)}
+.gen-files{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:14px}
+#genFileList{font-size:12.5px;color:var(--sub)}
+#genStatus{font-size:12.5px;color:var(--sky-t);margin-top:10px;min-height:1.4em}
+.refchip{display:inline-flex;align-items:center;gap:0;padding:0;background:none;border:none}
+.refchip a.chip{border-top-right-radius:0;border-bottom-right-radius:0;border-right:none}
+.chipdel{
+  border:1px solid var(--line-hi);border-left:none;border-top-right-radius:7px;border-bottom-right-radius:7px;
+  background:var(--panel-2);color:var(--muted);font-size:11px;padding:4px 7px;cursor:pointer;line-height:1;
+}
+.chipdel:hover{color:var(--rose);border-color:var(--rose)}
+.chip.addchip{border-style:dashed;color:var(--sub)}
+.chip.addchip:hover{color:var(--fg);border-color:var(--line-hi)}
+
+/* ============================ 投影モード ============================ */
+#project{
+  display:none;position:fixed;inset:0;background:var(--bg);z-index:50;
+  flex-direction:column;align-items:center;justify-content:center;gap:24px;text-align:center;padding:40px;
+}
+#project.on{display:flex}
+#project .pt{font-size:42px;font-weight:600}
+#project .pbig{font-family:var(--mono);font-size:clamp(120px,22vw,300px);line-height:.95;letter-spacing:-.04em}
+#project .pnext{font-size:22px;color:var(--sub)}
+#project .pbig.warn5{color:var(--amber)}
+#project .pbig.warn1,#project .pbig.over{color:var(--rose)}
+#project .exit{position:absolute;top:20px;right:22px}
+
+</style>
+</head>
+<body>
+
+<header>
+  <h1>研修ダッシュボード</h1>
+  <span class="pack" title="このフォルダごとコピーすれば、どのPCでも同じ初期講座で使えます">パッケージ</span>
+  <select id="courseSel" title="担当講座"></select>
+  <button class="btn sm ghost" id="btnNewCourse">＋講座</button>
+  <button class="btn sm ghost" id="btnDelCourse">削除</button>
+  <button class="btn sm ghost" id="btnResetAll" title="ブラウザに保存された編集内容を破棄し、HTMLに書かれた初期定義に戻します">初期状態に戻す</button>
+  <span class="spacer"></span>
+  <button class="btn sm ghost" id="btnBook">🎤 ネタ帳</button>
+  <div class="clock" id="clock">--:--:--</div>
+</header>
+
+<div class="main">
+  <!-- 左：タイムライン -->
+  <section class="card">
+    <h2>本日のタイムライン</h2>
+    <div class="summary">
+      <div class="stat"><span class="lbl">開始</span><div class="num" id="sStart">--:--</div></div>
+      <div class="stat"><span class="lbl">進捗</span><div class="num" id="sProg">0 / 0</div></div>
+      <div class="stat ontime" id="sDiffBox"><span class="lbl">予実差</span><div class="num" id="sDiff">±0分</div></div>
+      <div class="stat"><span class="lbl">終了見込</span><div class="num" id="sEnd">--:--</div></div>
+    </div>
+    <div class="tl" id="timeline"></div>
+
+    <div class="edit">
+      <h2>コマ編集</h2>
+      <div class="tools">
+        <span class="lbl">開始時刻</span>
+        <input type="time" id="startTime" step="300">
+        <button class="btn sm" id="btnAdd">＋コマ追加</button>
+        <button class="btn sm" id="btnResetRun">進行リセット</button>
+      </div>
+      <div class="tl" id="editList"></div>
+
+      <details class="gen">
+        <summary>テンプレートから一括生成（既存のコマは置き換わります）</summary>
+        <div class="gen-grid">
+          <label><span class="lbl">開始</span><input type="time" id="gStart" value="09:30" step="300"></label>
+          <label><span class="lbl">講義(分)</span><input type="number" id="gSession" value="50" min="5" step="5"></label>
+          <label><span class="lbl">休憩(分)</span><input type="number" id="gBreak" value="10" min="0" step="5"></label>
+          <label><span class="lbl">昼開始</span><input type="time" id="gLunch" value="12:00" step="300"></label>
+          <label><span class="lbl">昼(分)</span><input type="number" id="gLunchMin" value="60" min="0" step="5"></label>
+          <label><span class="lbl">終了</span><input type="time" id="gEnd" value="17:00" step="300"></label>
+          <button class="btn warn" id="btnGen">生成</button>
+        </div>
+      </details>
+    </div>
+  </section>
+
+  <!-- 右：実行パネル -->
+  <section class="card">
+    <h2>進行中<span id="peekTag" style="color:var(--indigo-t);font-weight:500"></span></h2>
+    <p class="now-title" id="nowTitle">未開始</p>
+    <p class="now-sub" id="nowSub">開始を押すと最初のコマが始まります</p>
+    <div class="big" id="bigTime">--:--</div>
+    <div class="bar" id="bar"><i style="width:0%"></i></div>
+    <div class="ctrl">
+      <button class="btn primary" id="btnStart">開始</button>
+      <button class="btn" id="btnNext">次のコマへ ▶</button>
+      <button class="btn sm" data-adj="-5">−5分</button>
+      <button class="btn sm" data-adj="-1">−1分</button>
+      <button class="btn sm" data-adj="1">＋1分</button>
+      <button class="btn sm" data-adj="5">＋5分</button>
+    </div>
+    <div class="ctrl">
+      <button class="btn sm" id="btnInsert">演習を差し込む</button>
+      <button class="btn sm" id="btnBreak">休憩を差し込む</button>
+      <button class="btn sm" id="btnProject">投影モード</button>
+      <button class="btn sm" id="btnMute">🔊 予鈴ON</button>
+    </div>
+    <div class="next-up" id="nextUp">次：—</div>
+    <div class="mat" id="mat"></div>
+  </section>
+</div>
+
+<div id="book">
+  <div class="inner">
+    <div class="bar2">
+      <h3>🎤 ネタ帳</h3>
+      <input type="search" id="bookQ" placeholder="キーワードで絞り込み（例：インデックス、NULL、正規化）">
+      <button class="btn sm" id="btnMd">Markdownで書き出し</button>
+      <button class="btn sm" id="btnCloseBook">閉じる (Esc)</button>
+    </div>
+    <div id="bookList"></div>
+  </div>
+</div>
+
+<div id="genModal">
+  <div class="inner">
+    <div class="bar2">
+      <h3>📂 資料から講座を自動生成</h3>
+      <button class="btn sm" id="btnCloseGen">閉じる (Esc)</button>
+    </div>
+    <p class="genNote">PowerPoint（.pptx）／PDFを解析し、スライド枚数や本文中の「n分」表記から、指定した日数・時間帯に収まるコマ割りを機械的に見積もって作成します。あくまで自動見積りです。生成後は必ず内容を確認し、下の「コマ編集」欄で調整してください。ブラウザの仕様上、選択したファイルの保存場所（フォルダパス）は自動取得できないため、必要なら下の「教材フォルダのパス」欄に手入力してください（空欄のままでもコースは作成できます）。</p>
+    <div class="gen-grid">
+      <label style="flex:1 1 100%;min-width:220px"><span class="lbl">講座名</span><input type="text" id="genName" placeholder="例：〇〇研修"></label>
+      <label><span class="lbl">日数</span><input type="number" id="genDays" value="1" min="1" max="10" step="1"></label>
+      <label><span class="lbl">開始</span><input type="time" id="genStart" value="09:30" step="300"></label>
+      <label><span class="lbl">終了</span><input type="time" id="genEnd" value="16:50" step="300"></label>
+      <label><span class="lbl">昼開始</span><input type="time" id="genLunch" value="12:00" step="300"></label>
+      <label><span class="lbl">昼(分)</span><input type="number" id="genLunchMin" value="60" min="0" step="5"></label>
+      <label><span class="lbl">休憩(分)</span><input type="number" id="genBreakMin" value="10" min="0" step="5"></label>
+      <label style="flex:1 1 100%;min-width:260px"><span class="lbl">教材フォルダのパス（任意・このHTMLからの相対）</span><input type="text" id="genBase" placeholder="例：教材/〇〇研修/　（空欄可。絶対パスは他PCで壊れます）"></label>
+    </div>
+    <div class="gen-files">
+      <input type="file" id="genFiles" accept=".pptx,.pdf" multiple hidden>
+      <button class="btn sm" id="btnGenPick">📎 pptx / pdf を選択（複数可・進行順に選ぶ）</button>
+      <span id="genFileList" class="empty">未選択</span>
+    </div>
+    <div id="genStatus"></div>
+    <div class="ctrl" style="margin-top:14px">
+      <button class="btn primary" id="btnGenRun">解析して自動生成</button>
+      <button class="btn" id="btnGenEmpty">資料なしで空コースを作成</button>
+    </div>
+  </div>
+</div>
+
+<div id="project">
+  <button class="btn exit" id="btnExitProject">閉じる (Esc)</button>
+  <div class="pt" id="pTitle">—</div>
+  <div class="pbig" id="pBig">--:--</div>
+  <div class="pnext" id="pNext">—</div>
+</div>
+
+<script>
+"use strict";
+/* ============================================================
+   データモデル
+   course = { id, name, start, base, blocks:[] }
+   block  = { id, title, type, min, at?,
+              pages:"テキストP74–90", refs:[{label,file,note}],
+              works:["EX001","クイズQ002"], tips:[...],
+              addons:[{no, anchor, min}] }
+   addon マスタは ADDONS（追加演習スライドの10問）
+   ============================================================ */
+const KEY = "training-dashboard-v6";
+const PACK_ID = "2026-09-06";
+const OLD_KEYS = ["training-dashboard-v5","training-dashboard-v4","training-dashboard-v3"];
+const TYPES = {lecture:"講義", exercise:"演習", break:"休憩", lunch:"昼"};
+const uid = () => Math.random().toString(36).slice(2, 9);
+
+/* ---- DB設計講座の教材ベースパス ---- */
+const DB_BASE  = "教材/DB設計(2026)/";
+const F_TEXT   = "講師用/01_DB設計テキスト.pptx";
+const F_CASE   = "講師用/02_ケーススタディと業務要件.pptx";
+const F_ADDON  = "講師用/DB設計_追加演習_研修スライド_v2.pptx";
+const F_CHART  = "講師用/00_タイムチャート.xlsx";
+
+/* ---- 追加演習マスタ（10問）：接続点はテキストの解説位置 ---- */
+const ADDONS = {
+  1:{t:"配送先住所は属性かエンティティか", s:"p9–11",  m:15, k:"エンティティ抽出／現在値と過去時点値の区別"},
+  2:{t:"イベント型エンティティへの昇格",   s:"p12–14", m:15, k:"関係に属性が付いたら連関→イベント型へ"},
+  3:{t:"期間を持つ多対多関係",             s:"p15–17", m:20, k:"履歴IDの必要性／期間重複の判定式"},
+  4:{t:"独立した多値属性の分離（第4正規化）", s:"p18–21", m:15, k:"3NFの先／多値従属の分離（12行問題）"},
+  5:{t:"契約履歴の期間重複防止",           s:"p22–24", m:15, k:"UNIQUEでは防げない／同時実行の競合"},
+  6:{t:"マスタ参照かスナップショットか",   s:"p25–27", m:15, k:"請求時単価の保存は正規化違反か"},
+  7:{t:"NULLが複数の意味を持つ場合",       s:"p28–31", m:15, k:"状態区分列の追加と整合性制約"},
+  8:{t:"物理削除・論理削除・無効化の使い分け", s:"p32–33", m:15, k:"削除フラグ一律は誤り／5ケース判定"},
+  9:{t:"複合インデックスの列順",           s:"p34–37", m:20, k:"等価条件→範囲・ソート列の順／副作用"},
+ 10:{t:"壊れたER設計のレビュー",           s:"p38–41", m:45, k:"15の指摘を出す総合演習。単独で45分必要"}
+};
+
+/* ============================================================
+   L4 ネタ帳：5〜10分で話せる小ネタ
+   k = 紐づけキーワード（コマのタイトル／ページ／ワークに含まれれば表示）
+   ============================================================ */
+const NETA = [
+{id:"n01", t:"リレーショナルモデルは、論文1本から始まった", min:5, upd:"2026-09-01",
+ k:["歴史"],
+ hook:"今みなさんが当たり前に使っているRDBは、1970年6月に出た13ページの論文が出発点です。",
+ pts:["著者はE.F.Codd。オックスフォード出身の数学者で、当時はIBMサンノゼ研究所の一研究員",
+      "論文名は「A Relational Model of Data for Large Shared Data Banks」（CACM 13(6) 377–387）",
+      "実はその1年前にIBM社内で回覧した論文の書き直し。社内向けが先だった",
+      "当時のIBMは階層型DBのIMSを売っていたので、社内の反応は冷淡。製品化はSystem R（1970年代）を待つことになる",
+      "つまり「正しい設計論が、売っている製品と衝突して10年寝かされた」という話でもある"],
+ use:"歴史パートの冒頭で。「理屈が世に出るまで10年かかった」→「だから今学ぶ価値がある」に繋げる。",
+ src:[{l:"ACM Digital Library（原論文）", u:"https://dl.acm.org/doi/10.1145/362384.362685"},
+      {l:"IBM: The relational database", u:"https://www.ibm.com/history/relational-database"}]},
+
+{id:"n02", t:"第3正規形の「先」がある。しかも作者はCoddではない", min:5, upd:"2026-09-01",
+ k:["第4正規","正規化②"],
+ hook:"1NF〜3NFはCoddが作りました。では第4正規形は誰が？——実は別人です。",
+ pts:["4NFはRonald Faginが1977年に提唱（ACM TODS 2巻 262–278）",
+      "BCNFは Boyce と Codd の連名、5NFもFagin（1979）。正規化は一人の作品ではない",
+      "1NF〜BCNFが扱うのは「関数従属」。4NFが扱うのは、それを一般化した「多値従属」",
+      "Faginの論文の主張は「4NFはCoddの改良3NF（＝BCNF）より厳密に強い」",
+      "どんなリレーションも情報を失わずに4NFへ分解できることが証明されている"],
+ use:"追加演習4（社員×資格×プロジェクトで12行問題）の直前に。「3NFで終わりだと思っていたものに続きがある」という驚きを作る。",
+ src:[{l:"Fourth normal form (Wikipedia)", u:"https://en.wikipedia.org/wiki/Fourth_normal_form"},
+      {l:"Fagin 1977 原論文 (ACM)", u:"https://dl.acm.org/doi/pdf/10.1145/320557.320571"}]},
+
+{id:"n03", t:"期間の重複は、実はDBの制約で防げる（ただしDBMSによる）", min:8, upd:"2026-09-01",
+ k:["重複期間","期間重複","EX003】解説","解説①②③"],
+ hook:"「アプリでチェックするしかない」と言いましたが、PostgreSQLなら宣言的に防げます。",
+ pts:["従来手：EXCLUDE制約。btree_gist拡張を入れて EXCLUDE USING gist (会員ID WITH =, 期間 WITH &&)",
+      "&& は範囲型の「重なる」演算子。GiSTインデックスで判定するので同時実行にも強い",
+      "PostgreSQL 18からはSQL:2011準拠の PRIMARY KEY (id, valid_at WITHOUT OVERLAPS) が使える",
+      "内部実装は結局EXCLUDE制約。空範囲を禁止する処理が足されている",
+      "MySQLには相当機能がない。だから「アプリ＋会員単位ロック」で担保するしかない",
+      "＝『どのDBMSを使うか』が設計の選択肢を変える、という実例"],
+ use:"追加演習5の解説直後。受講者の答え（アプリでチェック）を否定せず、「移植性を捨てればもっと強い手がある」と一段上を見せる。",
+ src:[{l:"PostgreSQL wiki: SQL2011Temporal", u:"https://wiki.postgresql.org/wiki/SQL2011Temporal"},
+      {l:"Temporal Constraints in PostgreSQL 18", u:"https://betterstack.com/community/guides/databases/postgres-temporal-constraints/"}]},
+
+{id:"n04", t:"サロゲートキー＝連番、はもう古い（UUIDv7の話）", min:7, upd:"2026-09-01",
+ k:["主キー","演習B"],
+ hook:"代理キーは連番だけではありません。2024年に新しい標準が出ています。",
+ pts:["RFC 9562（2024年5月）でUUIDv7が標準化された",
+      "先頭48ビットがUnixミリ秒タイムスタンプ。つまり生成順にほぼ並ぶ",
+      "UUIDv4は完全ランダム→B-treeインデックスのランダムな位置に挿入され、ページ分割が多発する",
+      "v7は末尾への追記に近くなるので、連番に近い挿入性能とソート効率が得られる",
+      "分散システムで採番の一元管理を避けつつ、性能も落としたくない、という要求への答え",
+      "ただし「時刻が推測できる」ので、推測されて困るIDには向かない"],
+ use:"演習B（メアドPK→会員ID）の解説後。「じゃあ会員IDは連番でいいのか？」の問いに繋げる。第5章のB-Treeの伏線にもなる。",
+ src:[{l:"RFC 9562 日本語訳", u:"https://tex2e.github.io/rfc-translater/html/rfc9562.html"},
+      {l:"主キーはもう「UUIDv7」一択なのか？", u:"https://zenn.dev/loglass/articles/c2db7e85702571"}]},
+
+{id:"n05", t:"論理削除は、いまも現役で燃えている論争", min:8, upd:"2026-09-01",
+ k:["削除","EX005","ER設計レビュー"],
+ hook:"「とりあえず削除フラグ」がなぜ技術的負債と呼ばれるのか、具体的な症状は2つです。",
+ pts:["症状①：UNIQUE制約が過去と衝突する。退会済みの user@example.com が居座り、同じ人が再登録できない",
+      "症状②：全クエリに WHERE deleted_at IS NULL が付く。主要な検索インデックスも全部 deleted_at 込みで作り直しになる",
+      "PostgreSQLなら部分インデックスで①は回避できる：CREATE UNIQUE INDEX ... ON users(email) WHERE deleted_at IS NULL",
+      "MySQLには部分インデックスがないので、この回避策が使えない",
+      "対案として「物理削除＋アーカイブテーブル」「状態列で表現」「有効期間で表現」が挙がる",
+      "つまり『見せたくない／新規利用を止めたい／存在自体を消したい／履歴として残したい』は全部別の要件"],
+ use:"追加演習8の解説として、あるいはEX005の観点③（履歴管理）の実務裏話として。現場で必ず揉める話なので食いつきが良い。",
+ src:[{l:"論理削除という技術的負債 — 3段階の代替案", u:"https://zenn.dev/eftech/articles/eftech-soft-delete-as-technical-debt"},
+      {l:"論理削除で破壊する, RDBの整合性", u:"https://zenn.dev/lru/articles/logical_delete_dystopia"}]},
+
+{id:"n06", t:"20億行で驚くのはまだ早い。Discordは「兆」の単位", min:8, upd:"2026-09-01",
+ k:["フェルミ","データ量"],
+ hook:"みなさんが今出した20億という数字、世の中の上には上がいます。",
+ pts:["Discordのメッセージ保管数は trillions（兆）オーダー",
+      "2022年、Cassandraで運用が限界に。ホットパーティションとGCでレイテンシがスパイクし、オンコールが鳴り続けた",
+      "ScyllaDBへ移行。177ノード → 72ノードに削減",
+      "P99レイテンシは約90%改善（メッセージ取得で200ms → 5ms）",
+      "移行はRust製のデータマイグレータを自作し、9日間・無停止で完了",
+      "手順は「新旧に二重書き込み → 過去データ移送 → 一部の読みを両方に流して突合 → 切替」"],
+ use:"フェルミ推定の共有直後。桁に驚いた勢いのまま「じゃあ実在サービスはどうしているか」へ。パーティショニングの必然性が腹落ちする。",
+ src:[{l:"Discord: How Discord Stores Trillions of Messages", u:"https://discord.com/blog/how-discord-stores-trillions-of-messages"},
+      {l:"The New Stack: 移行の詳細", u:"https://thenewstack.io/how-discord-migrated-trillions-of-messages-to-scylladb/"}]},
+
+{id:"n07", t:"NULLは「値がない」ではない。Codd自身が作り直そうとした", min:7, upd:"2026-09-01",
+ k:["NULL","解説①②③"],
+ hook:"NULLの意味が複数ある、という問題。実はCoddが40年前に気づいて、直そうとして失敗しています。",
+ pts:["1990年の著書『The Relational Model for Database Management: Version 2』でCoddは4値論理を提案",
+      "True / False / Missing but Applicable / Missing but Inapplicable の4つ",
+      "前者をA-mark、後者をI-markと呼んだ。「値はあるはずだが不明」と「そもそも属性が適用されない」を分ける発想",
+      "＝まさに演習の『視聴中』と『旧バージョンで記録していない』の区別",
+      "しかしSQLは採用しなかった。今も NULL は1種類のまま",
+      "だから我々は状態区分列を自分で足す。標準がやってくれなかったことを設計で埋めている"],
+ use:"追加演習7の解説直後。「みなさんが今出した答えは、Coddが標準化に失敗した機能を手で実装している」と言うと効く。",
+ src:[{l:"A More General Model For Handling Missing Information (SIGMOD Record)", u:"https://sigmodrecord.org/publications/sigmodRecord/9109/pdfs/126482.126487.pdf"}]},
+
+{id:"n08", t:"最左プレフィックスは、紙の電話帳で説明できる", min:5, upd:"2026-09-01",
+ k:["インデックス","B-Tree"],
+ hook:"複合インデックスの列順がなぜ効くのか。電話帳を思い出してください。",
+ pts:["紙の電話帳は（姓, 名）の複合インデックスそのもの",
+      "「田中 太郎」は一瞬で引ける。姓で絞ってから名で絞れるから",
+      "では「名前が太郎の人」は？——全ページ走査するしかない。これが最左プレフィックスが効かない状態",
+      "（名, 姓）で作り直せば太郎は引けるが、今度は「田中さん一覧」が引けなくなる",
+      "だから1本のインデックスで全部を速くしようとしてはいけない、に着地する",
+      "並び替えも同じ。電話帳は姓の中で名が並んでいるので、田中さんを名前順に出すのはタダ"],
+ use:"B-Treeの仕組み図の直後、EX004/追加9に入る前の30秒〜5分。図を見せる前にこの例え話をしておくと理解が速い。",
+ src:[]},
+
+{id:"n09", t:"「請求時単価を持つ」は会計の常識であって、正規化違反ではない", min:7, upd:"2026-09-01",
+ k:["非正規化","スナップショット"],
+ hook:"請求明細に単価を持つのは冗長でしょうか。会計の世界では、持たない方が事故です。",
+ pts:["消費税率は3%→5%→8%→10%と改定され、さらに軽減税率で8%が併存している",
+      "単価×数量から都度計算する設計だと、去年の請求書を今表示したときに今の税率で再計算されてしまう",
+      "割引キャンペーンの条件や端数処理（切り捨て／四捨五入／切り上げ）も仕様変更で変わる",
+      "つまり「計算ルールそのものが時間とともに変わる」ため、結果を保存しないと過去を再現できない",
+      "プランマスタの月額料金＝現在の標準価格、請求明細の請求時単価＝確定時の適用価格。役割が違う別の事実",
+      "同じ理屈が、Day1の『注文時の配送先をスナップショット保存』と完全に同じ構造"],
+ use:"追加演習6の解説。「冗長＝悪」の反射を壊す場所。Day1で蒔いた配送先スナップショットの種をここで回収すると効果が倍になる。",
+ src:[]},
+
+{id:"n10", t:"ER図の「カラスの足」はどこから来たのか", min:5, upd:"2026-09-01",
+ k:["ER図導入","カーディナリティ","エンティティ抽出"],
+ hook:"この三又の記号、正式には Crow's Foot（カラスの足）といいます。",
+ pts:["ER図の原典はPeter Chenの1976年の論文。ACM TODS 創刊号の第1論文",
+      "ただしChen記法はエンティティが四角、リレーションシップが菱形で、実務では図が大きくなりすぎた",
+      "現在主流のIE記法（カラスの足）は、多side に三又を描くことで線だけで多重度を表せる",
+      "他にIDEF1X（米国政府標準由来）もあり、日本の官公庁系案件で見かける",
+      "A5:SQL Mk-2 が描くのはIE記法。だから研修で見る図は全部カラスの足",
+      "記法が3つあるということは、現場で『相手がどの記法で読むか』を確認する必要がある、ということ"],
+ use:"ER図導入の最初。記号の由来を知ると記憶に残る。実務で他社の設計書を読む時の注意にも繋げられる。",
+ src:[]},
+
+{id:"n11", t:"「よい下書き」ほど、誤送信は起きやすい", min:5, upd:"2026-09-06",
+ k:["誤送信","送る前"],
+ hook:"雑な文ではなく、丁寧だったから危ない。人が読まずに送れる完成度だった、が事故の条件です。",
+ pts:["混ざるのはたいてい3つ。未決を確定のように書く納期、材料にない効果金額、別顧客のCC",
+      "「AIが送った」は通らない。届く名前は営業本人",
+      "エージェントの「下書きを先に進める」は、この事故を自動で起こしうる。送信は人",
+      "午前にやった送る前30秒は、この事例の予防だった、と接続する"],
+ use:"事例1のあと。「このメール、何を1つだけ見れば事故は半分になるか」→宛先か、納期・数字。",
+ src:[]},
+
+{id:"n12", t:"幻覚は、意図的な嘘ではない。自然な日本語が危ない", min:5, upd:"2026-09-06",
+ k:["幻覚","出典"],
+ hook:"デモB・Cで消した「出典のない数字」を、商談で踏み抜いた版です。",
+ pts:["製造部長は同業に友達がいる。検証される前提で話す",
+      "初稿の速さは残す。事例と数字の欄だけ人が持つ",
+      "「AIが書いたから」は先方に通用しない",
+      "出典のない市場規模・実在しない競合機能・断定した行政の動きは、その場で赤で消す"],
+ use:"事例2の導入。問い：「自分の提案で、幻覚が出たらいちばん恥ずかしい欄はどこか」",
+ src:[]},
+
+{id:"n13", t:"シャドーAIは、画面に「漏えいしました」と出ない", min:5, upd:"2026-09-06",
+ k:["シャドー","シャドーAI"],
+ hook:"会社のCopilotが使えない土曜はよくある。上手く書けたことと、置いてよい場所は別です。",
+ pts:["貼りがちなのはメール全文と社外秘Excel。契約と置き場所が壊れる",
+      "学習利用の有無をここで試験しない。営業は条件を読んでいないことが多い、で足りる",
+      "使えない日は架空化するか、手を止める。家の賢さで場所を決めない",
+      "隠れて使うことは勧めない、と言い切る"],
+ use:"事例3のあと。誘導：公開情報と架空化まで。実名・添付は止める。",
+ src:[]}
+];
+const netaFor = b => {
+  if(!b) return [];
+  const hay = [b.title, b.pages||"", (b.works||[]).join(" ")].join(" ");
+  return NETA.filter(n => n.k.some(w => hay.includes(w)));
+};
+function netaMd(list){
+  return (list||NETA).map(n =>
+`## ${n.t}
+
+- 所要：${n.min}分　／　更新：${n.upd}　／　紐づけ：${n.k.join("・")}
+
+**つかみ**：${n.hook}
+
+${n.pts.map(p => "- " + p).join("\n")}
+
+**使いどころ**：${n.use}
+${n.src.length ? "\n**出典**\n" + n.src.map(s => `- [${s.l}](${s.u})`).join("\n") + "\n" : ""}`).join("\n---\n\n");
+}
+
+/* ---- ツール類（自作HTML教材） ---- */
+const T_ERQUIZ = "★ER図クイズ.html";
+const T_NORMLAB= "★正規化しくじりラボ.html";
+const T_NORM13 = "★正規化（１→３）説明.html";
+const T_INDEX  = "★索引効果.html";
+const T_ERCHECK= "DB設計ER図チェック.html";
+
+const B = o => Object.assign({id:uid(), type:"lecture"}, o);
+const brk = (n,m) => B({title:"休憩"+n, type:"break", min:m||10});
+
+/* ============================================================
+   DB設計研修 Day1（9:00–17:30）
+   設計方針：追加演習10問のうち8問を常設。基礎演習は上位互換に差し替える。
+   ・歴史パート／A5M2操作／図書館練習／レシート正規化 を圧縮して枠を捻出
+   ・演習A解説とEX001を前倒しし、Day1最終枠に★バッファ15分を確保
+   ============================================================ */
+const DB_DAY1 = [
+  B({title:"OP・ゴール／設計3工程〔歴史・圧縮〕／全体マップ・各工程", min:60,
+     pages:"テキスト P1–28",
+     refs:[{label:"テキスト", file:F_TEXT, note:"P1–28"}],
+     tips:["【圧縮】歴史パート 40分→20分。Codd／ANSI-SPARC／Chen の3点だけ残し1枚2分弱で流す",
+           "浮いた20分で「3工程 全体マップ・各工程・実務注意」をこの枠に収める",
+           "3層スキーマの説明は最小限に留め、工程ごとの成果物対応表に時間を使う"]}),
+  brk("①"),
+  B({title:"3工程確認ワーク／ER図導入・エンティティ抽出／【追加1】配送先設計", type:"exercise", min:60,
+     pages:"テキスト P29–39 ＋ 追加演習 p9–11",
+     refs:[{label:"テキスト", file:F_TEXT, note:"P29–39"},
+           {label:"追加演習スライド", file:F_ADDON, note:"p9–11"}],
+     works:["設計3工程 確認ワーク（P29・5分）","★追加1：配送先住所は属性かエンティティか（提示5＋思考5＋解説10）"],
+     tips:["★追加1を常設。「名詞=エンティティ」の反復ではなく、判断を言語化させる演習で定着させる",
+           "接続点は P36「エンティティのタイプ」の直後。一覧・更新・削除の対象＝エンティティ化の基準を掴ませる",
+           "「注文確定時点の配送先をスナップショット保存」は Day2 追加6（請求時単価）への伏線。ここで種を蒔く"]}),
+  brk("②"),
+  B({title:"カーディナリティ・オプショナリティ／【追加2】イベント型エンティティ", type:"exercise", min:40,
+     pages:"テキスト P40–51 ＋ 追加演習 p12–14",
+     refs:[{label:"テキスト", file:F_TEXT, note:"P40–51"},
+           {label:"追加演習スライド", file:F_ADDON, note:"p12–14"},
+           {label:"ER図クイズ", file:T_ERQUIZ}],
+     works:["★追加2：イベント型エンティティへの昇格（提示5＋思考5＋解説5）","図書館システム練習 → 宿題化"],
+     tips:["★追加2を常設化。接続点は P40「よくあるリレーションシップのパターン」の直後",
+           "【圧縮】図書館練習（8分）は宿題に回し、その分を追加2に充当",
+           "「関係に属性が付いたら連関→イベント型」の型を、多対多の予告と同時に入れてしまう"]}),
+  B({title:"昼食", type:"lunch", min:60, at:"12:00"}),
+  B({title:"ER図4ステップ＋A5M2〔短縮〕／【演習A】旅行予約ER図＋解説", type:"exercise", min:60,
+     pages:"テキスト P52–57",
+     refs:[{label:"テキスト", file:F_TEXT, note:"P52–57"},
+           {label:"ER図チェック", file:T_ERCHECK}],
+     works:["演習A：ER図作成（演習25分）","演習A 解説（20分）"],
+     tips:["【圧縮】A5M2操作説明は15分。起動と保存だけ見せて、あとは手を動かさせる",
+           "★演習A解説までこの枠に収める。これが後続を前倒しできる原資になる",
+           "多対多を見つけた受講者は褒めて、正規化での回収を予告"]}),
+  brk("③"),
+  B({title:"ケーススタディStreamBee／v0読解①〜④／なぜv0は成功したか／3つの品質", min:60,
+     pages:"ケーススタディ 全8p ＋ テキスト P58–66",
+     refs:[{label:"ケーススタディ", file:F_CASE, note:"全8p"},
+           {label:"テキスト", file:F_TEXT, note:"P58–66"}],
+     works:["初期ER図v0 配布（v0.a5er）"],
+     tips:["【圧縮】v0読解①〜④を一気に4本。欠陥の予兆（列持ち・メアドPK・視聴ログFK）は先に受講者から挙げさせる",
+           "「3つの品質」までこの枠で扱う",
+           "要件7項目は淡々と。深掘りは各Changeで回収"]}),
+  brk("④"),
+  B({title:"主キーの特性／【演習B】／Change-1・Q001／【EX001】トライアル期間", type:"exercise", min:60,
+     pages:"テキスト P67–78",
+     refs:[{label:"テキスト", file:F_TEXT, note:"P67–78"}],
+     works:["演習B：v0の不適切な主キー修正（演習5＋解説10）","クイズQ001（10分）","EX001：トライアル期間のデータ化（演習10＋解説15）"],
+     tips:["★EX001をこの枠に前倒し。Q001→EX001 を一続きで走らせる",
+           "演習B：メアドPK→会員ID。サロゲートキー判断の伏線",
+           "「誰の属性か?」の問いを型として固定し、以降の全EXで反復"]}),
+  brk("⑤"),
+  B({title:"Change-2・Q002／【正規化①導入】／Day1まとめ・宿題／★バッファ15分", min:60,
+     pages:"テキスト P79–90",
+     refs:[{label:"テキスト", file:F_TEXT, note:"P79–90"},
+           {label:"正規化しくじりラボ", file:T_NORMLAB}],
+     works:["クイズQ002（演習5＋解説15）","宿題：図書館システム練習問題"],
+     tips:["★前倒しの成果でこの最終枠に15分のバッファがある。2日間で唯一まとまった余裕",
+           "Q002：ALTER案の限界を共有→正規化の必要性へ接続",
+           "正規化①は型のみ提示。1NF〜3NFの手順は翌朝と明言",
+           "巻いた場合は追加8（削除の使い分け）をここで拾ってもよい"],
+     addons:[{no:8, anchor:"バッファが残った場合の予備。本来の接続点は Day2 P158", min:15}]})
+];
+
+/* ============================================================
+   DB設計研修 Day2（9:00–17:30）
+   ・EX004 → 追加9、EX005 → 追加10 に差し替え（同一論点の上位版）
+   ・EX003解説の直後に追加7・追加5を常設
+   ============================================================ */
+const DB_DAY2 = [
+  B({title:"復習／【正規化②本編】レシート1NF〜3NF〔圧縮〕／【追加4】第4正規化", type:"exercise", min:60,
+     pages:"テキスト P91–108 ＋ 追加演習 p18–21",
+     refs:[{label:"テキスト", file:F_TEXT, note:"P91–108"},
+           {label:"追加演習スライド", file:F_ADDON, note:"p18–21"},
+           {label:"正規化(1→3)説明", file:T_NORM13},
+           {label:"正規化しくじりラボ", file:T_NORMLAB}],
+     works:["★追加4：独立した多値属性の分離＝第4正規化（提示5＋思考5＋解説5）"],
+     tips:["【圧縮】レシート正規化 40分→30分。STEP1〜5は流れを見せ、関数従属の説明を厚くする",
+           "★追加4を常設化。接続点は P107「参考：正規化について詳しく」の直後",
+           "「3NFの先がある」を見せるのがこの枠の価値。12行問題は電卓なしで即答させる"]}),
+  brk("①"),
+  B({title:"【EX002】1NF適用／上限チェック・PK/FK／Change-3・Q003／EX003着手", type:"exercise", min:60,
+     pages:"テキスト P109–120",
+     refs:[{label:"テキスト", file:F_TEXT, note:"P109–120"}],
+     works:["EX002：家族会員名1〜4の列持ち解消（演習10＋解説15）","クイズQ003 提示","EX003 着手・思考のヒント①"],
+     tips:["【圧縮】EX002解説 15分厳守。追加4で第4正規化まで見た後なので1NFは速い",
+           "★EX003の着手をこの枠に前倒しし、昼またぎの熟成時間を長く取る",
+           "UPDATEで「過去が消える」体感→Q003で危機感作り"]}),
+  brk("②"),
+  B({title:"Q003解説／【EX003】契約履歴テーブル 演習・ヒント②", type:"exercise", min:40,
+     pages:"テキスト P121–124",
+     refs:[{label:"テキスト", file:F_TEXT, note:"P121–124"}],
+     works:["EX003：演習30分（段階ヒント②）"],
+     tips:["EX003は全2日の最難関。ここの時間は削らない",
+           "end_dateのNULL vs 9999／PK選択を、答えではなく判断基準で誘導",
+           "昼をまたいで設計判断を熟成させる"]}),
+  B({title:"昼食", type:"lunch", min:60, at:"12:00"}),
+  B({title:"【EX003】解説①②③／【追加7】NULLの多義／【追加5】期間重複と同時実行", type:"exercise", min:60,
+     pages:"テキスト P125–126 ＋ 追加演習 p28–31・p22–24",
+     refs:[{label:"テキスト", file:F_TEXT, note:"P125–126"},
+           {label:"追加演習スライド", file:F_ADDON, note:"p28–31 / p22–24"}],
+     works:["EX003 解説①②③（25分）","★追加7：NULLが複数の意味を持つ場合（15分）","★追加5：契約履歴の期間重複防止＋同時実行（20分）"],
+     tips:["★2日間の山場。EX003解説②（NULL vs 9999）→ 追加7、解説③（重複期間の禁止）→ 追加5 と隙間なく繋がる",
+           "追加7は「NULLを機械的に禁止していないか」を必ず問う。状態区分の追加後の整合性制約まで",
+           "追加5は競合状態（2トランザクションが同時に重複なしと判定）まで説明させるのが評価軸",
+           "追加3（期間を持つ多対多）は同じ判定式の組み合わせ単位版。時間が許せば実施、通常は宿題"],
+     addons:[{no:3, anchor:"追加5の発展。同一会員単位→組み合わせ単位へ。通常は宿題配布", min:20}]}),
+  brk("③"),
+  B({title:"正規化の代償・あえての非正規化／【追加6】スナップショット／N+1／【フェルミ推定】", type:"exercise", min:60,
+     pages:"テキスト P127–137 ＋ 追加演習 p25–27",
+     refs:[{label:"テキスト", file:F_TEXT, note:"P127–137"},
+           {label:"追加演習スライド", file:F_ADDON, note:"p25–27"},
+           {label:"ORM N+1問題", file:"講師用/04_ORM N+1問題.md"}],
+     works:["★追加6：マスタ参照かスナップショット保存か（15分）","フェルミ推定：シンキング10＋共有10","v3.a5er 配布"],
+     tips:["★追加6を常設化。接続点は P129「現実解：あえての非正規化」の直後。Day1追加1のスナップショットが回収される",
+           "「請求時単価の保存は正規化違反か？」→ 意図的なスナップショットであり無意味な重複ではない、を言わせる",
+           "【圧縮】フェルミ推定は20分。計算式の組み立ては個人作業にして、共有を厚く取る"]}),
+  brk("④"),
+  B({title:"20億行の衝撃／Full Table Scan・B-Tree／【追加9】複合インデックスの列順", type:"exercise", min:60,
+     pages:"テキスト P138–148 ＋ 追加演習 p34–37",
+     refs:[{label:"テキスト", file:F_TEXT, note:"P138–148"},
+           {label:"追加演習スライド", file:F_ADDON, note:"p34–37"},
+           {label:"索引効果", file:T_INDEX}],
+     works:["★追加9：複合インデックスの列順（EX004の差し替え・演習10＋解説20）"],
+     tips:["★EX004 → 追加9 に差し替え。正解は同じ INDEX(会員ID, 視聴日時)＝B:(user_id, watched_at) だが、追加9は候補A/B/Cの比較・副作用・発展問いまで踏み込む",
+           "B-Treeの仕組み図は1枚じっくり。「等価条件の列→範囲・並び替え列」の順を図で固定",
+           "副作用（INSERT負荷・ストレージ・キャッシュ効率）まで必ず触れる。ここが中級との差",
+           "発展問い（先頭がuser_idでは効かないCOUNT）で「1本で全部速くしない」を締めに使う"]}),
+  brk("⑤"),
+  B({title:"Q005／性能改善案・スケーラビリティ／【追加10】ER設計レビュー／総括", type:"exercise", min:60,
+     pages:"テキスト P149–168 ＋ 追加演習 p38–41",
+     refs:[{label:"テキスト", file:F_TEXT, note:"P149–168"},
+           {label:"追加演習スライド", file:F_ADDON, note:"p38–41"},
+           {label:"ER図チェック", file:T_ERCHECK}],
+     works:["クイズQ005（5分）","★追加10：壊れたER設計のレビュー（EX005の差し替え・演習15＋解説20）","v4.a5er 配布"],
+     tips:["★EX005 → 追加10 に差し替え。EX005は「観点を5つ挙げる」、追加10は「実物に8件以上指摘する」。実物で指摘させる",
+           "解説時は P156–160 の重要観点①〜⑤をレビュー軸として提示し、指摘を分類させる",
+           "⚠ バッファなし・60分ぴったり。追加10の演習を15分で必ず切る",
+           "追加8（物理/論理削除の使い分け）は宿題として配布し、フォロー研修で回収"],
+     addons:[{no:8, anchor:"P158 重要観点③「事実の履歴管理」の直後。時間が無ければ宿題配布", min:15}]})
+];
+
+/* ============================================================
+   SE外部・内部設計 演習（3日間・9:30–17:30）
+   出典：講座進行用(3日間).pptx 全176枚 ＋ スライド内に記載の時刻指定
+   3日間版は 演習1・2・3・6・7・8 の6演習構成
+   （演習4=外部設計バッチ／演習5=内部設計バッチ① は4日間版のみ）
+   進行の型：演習 → Gレビュー → 解答解説 → 見直し
+   休憩は昼と一部を除き「各自のタイミングで自由に」（スライドp30/p55）
+   ============================================================ */
+const SE_BASE = "教材/SE外部・内部設計/";
+const SE_DECK = "講座進行用(3日間).pptx";
+const SE_NOTE = "SE外部・内部設計講師ノートスライド.pdf";
+const S_KAISHA = "00_事前学習資料/1_会社概要.pdf";
+const S_GAIYO  = "00_事前学習資料/2_概要設計書（抜粋）.pdf";
+const S_FLOW   = "00_事前学習資料/3_業務フロー.pdf";
+const S_DENPYO = "00_事前学習資料/4_発注伝票（発注登録依頼票）.pdf";
+const S_DATA   = "00_事前学習資料/5_データ定義および説明資料.pdf";
+const S_DBREF  = "00_事前学習資料/6_DB設計参考資料.pdf";
+const S_BATCH  = "00_事前学習資料/7_バッチ設計参考資料.pdf";
+
+const SE_DAY1 = [
+  B({title:"オリエン：講座概要・特徴・心構え・進め方と時間割", min:10,
+     pages:"進行用スライド p1–6",
+     refs:[{label:"進行用スライド", file:SE_DECK, note:"p1–6"},
+           {label:"講師ノート", file:SE_NOTE}],
+     tips:["想定受講者像は「外部設計あるいは内部設計の一部を担当したが、一人で全て手がけたことがない」",
+           "講座の型を最初に宣言する：演習 → Gレビュー → 解答解説 → 見直し の繰返し",
+           "「前の課題のでき具合が後の課題に影響する」を心構えで明言しておく"]}),
+  B({title:"演習前解説：モデル企業・設計範囲・業務フロー・発注伝票の日付", min:30,
+     pages:"進行用スライド p7–21",
+     refs:[{label:"進行用スライド", file:SE_DECK, note:"p7–21"},
+           {label:"会社概要", file:S_KAISHA, note:"P.2 売上高・店舗数"},
+           {label:"概要設計書(抜粋)", file:S_GAIYO, note:"P.4,5,12,13,15"},
+           {label:"業務フロー", file:S_FLOW, note:"P.2,4,6"},
+           {label:"発注伝票", file:S_DENPYO}],
+     tips:["四季歳は現状21店舗、3年以内に120店舗へ拡大予定。この数字が後の拡張性チェックの根拠になる",
+           "発注方法は3通り、うち70%がAパターン（業務フローP.2）",
+           "「発注伝票内の日付の整理」（p18・業務フローP.6）はDay3の演習8入力チェックまで効き続ける",
+           "スライドp6：各種ファイルはパスワード保護zipで都度配布"]}),
+  B({title:"【演習1】外部設計オンライン① 画面一覧・画面遷移図・メッセージ一覧", type:"exercise", min:110,
+     pages:"進行用スライド p22–27",
+     refs:[{label:"進行用スライド", file:SE_DECK, note:"p22–27"},
+           {label:"演習1 課題", file:"02_演習課題/演習1_外部設計オンライン①"},
+           {label:"演習1 資料", file:"01_演習別資料/演習1_外部設計オンライン①"},
+           {label:"概要設計書(抜粋)", file:S_GAIYO, note:"p12 機能の洗い出し"},
+           {label:"業務フロー", file:S_FLOW, note:"p2〜7"}],
+     works:["画面一覧（本部発注業務）","画面遷移図（発注登録・Excel）","メッセージ一覧"],
+     tips:["機能を漏れなく抽出→画面に分割→往き/戻りの遷移を設計、という順序を板書で固定",
+           "チェックポイント：業務フローの処理概要を満たすか／発注方法によって遷移先が分かるか／続けて発注する想定になっているか",
+           "昼をまたぐので、午前は画面一覧まで到達させるのが目安"]}),
+  B({title:"お昼休憩", type:"lunch", min:60, at:"12:00",
+     pages:"進行用スライド p28"}),
+  B({title:"【演習1】続き（〜14:30）", type:"exercise", min:90,
+     pages:"進行用スライド p29–31",
+     refs:[{label:"進行用スライド", file:SE_DECK, note:"p29–31"},
+           {label:"演習1 ワークシート", file:"01_演習別資料/演習1_外部設計オンライン①/02_ワークシート"}],
+     tips:["休憩は各自のタイミングで自由に取らせる（スライドp30）",
+           "⚠ スライドp31は「14:00まで」表記、p29は「〜14:30」。実運用は14:30で回している前提で組んでいる",
+           "解説で使ったPPTはチャットで配布する"]}),
+  B({title:"【演習1】グループレビュー（〜15:00）", type:"exercise", min:30,
+     pages:"進行用スライド p32",
+     refs:[{label:"進行用スライド", file:SE_DECK, note:"p32"}],
+     tips:["レビュー観点は課題指示書3-2のチェックポイントをそのまま使う",
+           "「この設計のポイントは〜です」を各グループに言語化させる"]}),
+  B({title:"【演習1】解答解説", min:45,
+     pages:"進行用スライド p33–43",
+     refs:[{label:"進行用スライド", file:SE_DECK, note:"p33–43"},
+           {label:"演習1 解答", file:"01_演習別資料/演習1_外部設計オンライン①/03_解答"}],
+     tips:["遷移の往き/戻りの抜けを重点的に。続けて発注する導線が最頻出の指摘",
+           "ここでの成果物が演習3（画面レイアウト）の入力になることを予告する"]}),
+  B({title:"休憩（〜15:55）／必要に応じて演習1の修正", type:"break", min:10,
+     pages:"進行用スライド p44"}),
+  B({title:"【演習2】演習前解説：DB設計（論理設計）", min:40,
+     pages:"進行用スライド p45–53",
+     refs:[{label:"進行用スライド", file:SE_DECK, note:"p45–53"},
+           {label:"データ定義および説明資料", file:S_DATA, note:"P.1〜7"},
+           {label:"DB設計参考資料", file:S_DBREF},
+           {label:"演習2 課題", file:"02_演習課題/演習2_外部設計DB"}],
+     tips:["対象は本部発注業務に加え、商品管理・商品仕入れ等も含む",
+           "雛形(.a5er)にはデータ定義P.1〜7記載のエンティティが登録済み。ゼロからではない",
+           "A5:SQL Mk-2 は 01_演習別資料/a5m2_2.14.4_x64 に同梱"]}),
+  B({title:"【演習2】DB設計（ER図作成）※明日へ継続", type:"exercise", min:55,
+     pages:"進行用スライド p54–55",
+     refs:[{label:"進行用スライド", file:SE_DECK, note:"p54–55"},
+           {label:"演習2 ワークシート", file:"01_演習別資料/演習2_外部設計DB/02_ワークシート"}],
+     works:["1. ER図の作成（優先）","2. 各種期間管理一覧（時間があれば）"],
+     tips:["チェックポイント：「発注」は正規化しエンティティを分割／カーディナリティを記載",
+           "データ定義の項目説明に無いエンティティ＝正規化で生成されるもの、と気づかせる",
+           "商品仕入の有効期限属性は複数ある。前後関係や期間の図示は余裕があれば",
+           "作業時間は2時間扱い。明日9:30から続けるので、ここでは着手と方針決めまでで良い"]})
+];
+
+const SE_DAY2 = [
+  B({title:"【演習2】続き（ER図作成）", type:"exercise", min:90,
+     pages:"進行用スライド p56–57",
+     refs:[{label:"進行用スライド", file:SE_DECK, note:"p56–57"},
+           {label:"データ定義および説明資料", file:S_DATA, note:"P.1〜7"},
+           {label:"演習2 ワークシート", file:"01_演習別資料/演習2_外部設計DB/02_ワークシート"}],
+     tips:["昨日の続き。冒頭で「発注の正規化」「店と店グループ」「有効期限」の3論点を再提示すると迷子が減る",
+           "手が止まっているグループは、具体的なデータを1件書かせて検証させる"]}),
+  B({title:"【演習2】グループレビュー（11:00から）", type:"exercise", min:30,
+     pages:"進行用スライド p58",
+     refs:[{label:"進行用スライド", file:SE_DECK, note:"p58"}],
+     tips:["レビューの視点：具体的なデータを例に検証してみる",
+           "正規化の論点は3つ：発注情報（発注伝票から展開）／商品情報（商品基本→商品仕入と価格）／店と店グループの関係"]}),
+  B({title:"【演習2】解答解説：正規化・主キー・連関エンティティ・有効期限", min:40,
+     pages:"進行用スライド p59–75",
+     refs:[{label:"進行用スライド", file:SE_DECK, note:"p59–75"},
+           {label:"演習2 解答", file:"01_演習別資料/演習2_外部設計DB/03_解答"},
+           {label:"データ定義および説明資料", file:S_DATA, note:"P3 店と店グループ"},
+           {label:"概要設計書(抜粋)", file:S_GAIYO, note:"P.7"}],
+     tips:["第一正規形：発注基本→発注商品→商品店別発注／商品基本→納品(仕入)→仕入価格",
+           "発注商品の主キーに納品年月日が含まれる理由（p63）＝同じ商品でも納品日違いを別に発注したい",
+           "店と店グループは多対多→連関エンティティ（p66–70）。ここが最頻出のつまずき",
+           "商品仕入れの有効期限管理（p71）はDay3の演習7「期間の考え方」で再登場する",
+           "⚠ 17枚を40分。連関エンティティの説明に時間を配分し、他は流す"]}),
+  B({title:"お昼休憩", type:"lunch", min:60, at:"12:10",
+     pages:"進行用スライド p76"}),
+  B({title:"【演習3】演習前解説：外部設計オンライン②（機能を設計する）", min:20,
+     pages:"進行用スライド p77–81",
+     refs:[{label:"進行用スライド", file:SE_DECK, note:"p77–81"},
+           {label:"演習3 課題", file:"02_演習課題/演習3_外部設計オンライン②"},
+           {label:"概要設計書(抜粋)", file:S_GAIYO, note:"p15 顧客の要望"},
+           {label:"業務フロー", file:S_FLOW, note:"p4,5 ②〜⑤／p6,7 ルールg・補助機能a,b"}],
+     tips:["自作の演習1成果物を使うか、配布の解答例を使うかを選ばせる",
+           "画面項目定義・機能定義(word)の（イ）表示制御(機能ボタン)（ウ）表示制御(項目)はGレビューで答え合わせ"]}),
+  B({title:"【演習3】画面レイアウト・項目定義・機能定義 前半", type:"exercise", min:40,
+     pages:"進行用スライド p82",
+     refs:[{label:"進行用スライド", file:SE_DECK, note:"p82"},
+           {label:"演習3 ワークシート", file:"01_演習別資料/演習3_外部設計オンライン②/02_ワークシート"}],
+     works:["商品店別発注情報登録画面（必須）","基本情報登録画面（時間が余ったら）","発注一覧画面（時間が余ったら）"],
+     tips:["★画面レイアウトに、どの画面遷移に基づくかを明記させる（演習1成果物 or 解答サンプル）",
+           "複数画面にわたる場合は、顧客にアピールしたい画面から設計させる"]}),
+  B({title:"【演習3】中間グループレビュー（14:30まで）", type:"exercise", min:20,
+     pages:"進行用スライド p83",
+     refs:[{label:"進行用スライド", file:SE_DECK, note:"p83"}],
+     tips:["●アピールポイントを具体的に：何を目的に、どのような工夫をしたか",
+           "※ユーザーに伝わる表現で説明させる。技術用語で逃げさせない"]}),
+  B({title:"【演習3】続き（〜16:00）", type:"exercise", min:90,
+     pages:"進行用スライド p84",
+     refs:[{label:"進行用スライド", file:SE_DECK, note:"p84"}],
+     tips:["チェックポイント：画面項目定義と各DBテーブルの項目の整合性がとれているか",
+           "店舗拡張・店グループ増加等、拡張性を考慮しているか（21→120店舗の伏線を回収）",
+           "スライドp84に「演習再開 13:40」の別案表記あり。中間レビューを入れない回はそちらで運用"]}),
+  B({title:"【演習3】グループレビュー（16:30まで）", type:"exercise", min:30,
+     pages:"進行用スライド p85",
+     refs:[{label:"進行用スライド", file:SE_DECK, note:"p85"}]}),
+  B({title:"【演習3】演習後解説：解答サンプルと画面表示制御", min:10,
+     pages:"進行用スライド p86–99",
+     refs:[{label:"進行用スライド", file:SE_DECK, note:"p86–99"},
+           {label:"演習3 解答", file:"01_演習別資料/演習3_外部設計オンライン②/03_解答"},
+           {label:"業務フロー", file:S_FLOW, note:"P.5"}],
+     tips:["⚠ 14枚を10分。機能ボタンの表示制御(p92–99)は「型」だけ見せて詳細は配布資料に回す",
+           "取得→確認→登録の順番と、各ボタンの活性/非活性がDay3演習8の入力チェックに直結する"]}),
+  B({title:"バッチ設計 事前学習解説：ジョブネット・ジョブ分割・再ラン", min:20,
+     pages:"進行用スライド p100–111",
+     refs:[{label:"進行用スライド", file:SE_DECK, note:"p100–111"},
+           {label:"バッチ設計参考資料", file:S_BATCH}],
+     tips:["ネット／ジョブ／ジョブステップの関係（p103）を最初に固定する",
+           "ジョブ分割のポイント：人手が入る時／再ランのし易さ（p105–106）",
+           "単純再ラン可能な設計＝ジョブ内でDB直接更新をしない（p107）",
+           "⚠ スライドp100は「16:10・解説10分」表記だが、演習3のレビューが16:30まで入るため実際はこの位置。要確認"]}),
+  B({title:"【演習6】内部設計バッチ② 着手（17:00開始）※明日へ継続", type:"exercise", min:30,
+     pages:"進行用スライド p110",
+     refs:[{label:"進行用スライド", file:SE_DECK, note:"p110"},
+           {label:"演習6 課題", file:"02_演習課題/演習6_内部設計バッチ②"},
+           {label:"演習6 ワークシート", file:"01_演習別資料/演習6_内部設計バッチ②/02_ワークシート"}],
+     works:["ジョブフロー：発注データ編集ジョブ","プログラム一覧","メッセージ一覧（発注エラーリスト掲載対象のみ）"],
+     tips:["留意点：使用するファイルはすべてシーケンシャルファイル。各マッチングのキーを設計書に指定",
+           "一時ファイルは「&&」を先頭に付けてジョブ終了後に削除する規約",
+           "作業時間1時間40分扱い。今日は30分だけ着手して、明日の朝に続ける"]})
+];
+
+const SE_DAY3 = [
+  B({title:"【演習6】演習前解説：ジョブフロー・プログラム一覧・メッセージ一覧", min:20,
+     pages:"進行用スライド p112–117",
+     refs:[{label:"進行用スライド", file:SE_DECK, note:"p112–117"},
+           {label:"業務フロー", file:S_FLOW, note:"p8 本部発注業務（バッチ）"},
+           {label:"バッチ設計参考資料", file:S_BATCH}],
+     tips:["昨日17:00に着手した続き。まず対象ジョブの範囲を再確認させる"]}),
+  B({title:"処理概要・ジョブ分割・ファイル一覧＆レイアウト・マッチング処理", min:20,
+     pages:"進行用スライド p118–125",
+     refs:[{label:"進行用スライド", file:SE_DECK, note:"p118–125"},
+           {label:"演習6 雛形", file:"01_演習別資料/演習6_内部設計バッチ②/02_ワークシート"}],
+     tips:["発注プレ処理で5ファイルを準備、翌日発注データが累積発注データに追加される（同レイアウト）",
+           "マッチングは商品コード昇順でソート済みが前提（p122）。ソートの必要性をここで押さえる",
+           "BEFORE/AFTERのレイアウト2枚（p120–121）を並べて見せると理解が速い"]}),
+  B({title:"【演習6】ジョブフロー・プログラム一覧・メッセージ一覧（〜11:40）", type:"exercise", min:90,
+     pages:"進行用スライド p126",
+     refs:[{label:"進行用スライド", file:SE_DECK, note:"p126"},
+           {label:"演習6 ワークシート", file:"01_演習別資料/演習6_内部設計バッチ②/02_ワークシート"}],
+     tips:["対象は発注データ作成ジョブネットの発注データ編集ジョブ（属性付与・エラーチェック・累積追加）",
+           "手が止まったら「実現したい機能」を先に箇条書きさせてからフローに落とさせる"]}),
+  B({title:"【演習6】グループレビュー（11:50まで）", type:"exercise", min:10,
+     pages:"進行用スライド p127",
+     refs:[{label:"進行用スライド", file:SE_DECK, note:"p127"}],
+     tips:["【プログラム一覧】漏れなく記載されているか／「要するに何をするプログラムか」がわかるか",
+           "【ジョブフロー】I/Oファイルが正しいか／正しく処理できるか／問題なく再ランできるか"]}),
+  B({title:"予備・質疑", min:10,
+     tips:["昼前の緩衝。押していればここを削る"]}),
+  B({title:"お昼休憩", type:"lunch", min:60, at:"12:00",
+     pages:"進行用スライド p128"}),
+  B({title:"【演習6】解答解説：ジョブ分割とジョブフローの正解", min:25,
+     pages:"進行用スライド p129–143",
+     refs:[{label:"進行用スライド", file:SE_DECK, note:"p129–143"},
+           {label:"演習6 解答", file:"01_演習別資料/演習6_内部設計バッチ②/03_解答"},
+           {label:"概要設計書(抜粋)", file:S_GAIYO, note:"P15 顧客要件"}],
+     tips:["実現したい機能：属性付与／エラーチェック／発注処理No付番／数量計算／累積追加＋前日ファイル削除・I/Fコピー",
+           "★ブレークダウンの順序（p139）が核心：発注処理Noは「はじめに」付ける＝エラー明細にも必要だから",
+           "数量計算は仕入情報（発注単位数）が付与された後でないと不可能、という依存関係を押さえる",
+           "エラーフラグで正常データのみ累積へ、が定石"]}),
+  B({title:"【演習7】演習前解説：プログラム概要説明書", min:10,
+     pages:"進行用スライド p144–146",
+     refs:[{label:"進行用スライド", file:SE_DECK, note:"p144–146"},
+           {label:"演習7 課題", file:"02_演習課題/演習7_内部設計バッチ③"}],
+     tips:["「詳細設計書の直接の参考資料になる」ことを意識させる"]}),
+  B({title:"【演習7】プログラム概要説明書（〜14:35）", type:"exercise", min:60,
+     pages:"進行用スライド p147",
+     refs:[{label:"進行用スライド", file:SE_DECK, note:"p147"},
+           {label:"演習7 資料", file:"01_演習別資料/演習7_内部設計バッチ③"}],
+     works:["商品情報取得（SDH140PBR）","仕入情報取得（SDH150PBR）","基本チェック（SDH110PBR）※任意"],
+     tips:["発注プレ処理ではエラーチェックを行っていない点を考慮させる",
+           "入出力に必要なもの、マッチングキーが読み取れる記載になっているか"]}),
+  B({title:"【演習7】グループレビュー（14:55まで）", type:"exercise", min:20,
+     pages:"進行用スライド p148",
+     refs:[{label:"進行用スライド", file:SE_DECK, note:"p148"}],
+     tips:["要するに何をするプログラムかわかるか／エラーコードは何かがわかるか／マッチングキーがわかるか"]}),
+  B({title:"【演習7】解答解説：有効期限と期間の考え方", min:15,
+     pages:"進行用スライド p149–155",
+     refs:[{label:"進行用スライド", file:SE_DECK, note:"p149–155"},
+           {label:"データ定義および説明資料", file:S_DATA}],
+     tips:["発注日基準でマスターデータを見る（p149）。商品情報／仕入情報に無い発注はエラー",
+           "★「納品日の検証はまだ！」（p151,153）＝チェックのタイミング分担が論点",
+           "有効期限の管理（p152）はDay2 演習2の解説で出したエンティティと同じもの。ここで回収する",
+           "期間の考え方（p154）は具体例で。ここが分かると演習8の入力チェックが速い"]}),
+  B({title:"【演習8】演習前解説：内部設計オンライン", min:20,
+     pages:"進行用スライド p156–161",
+     refs:[{label:"進行用スライド", file:SE_DECK, note:"p156–161"},
+           {label:"演習8 課題", file:"02_演習課題/演習8_内部設計オンライン"},
+           {label:"業務フロー", file:S_FLOW, note:"p5 取得機能"}],
+     tips:["演習3の解答例をベースにするか参照するかを選ばせる",
+           "＋画面表示制御（他ボタン・項目の活性化/非活性化）が演習3から積み上がる部分"]}),
+  B({title:"【演習8】入力チェック仕様・処理フロー・メッセージ一覧（〜16:50）", type:"exercise", min:80,
+     pages:"進行用スライド p162",
+     refs:[{label:"進行用スライド", file:SE_DECK, note:"p162"},
+           {label:"演習8 ワークシート", file:"01_演習別資料/演習8_内部設計オンライン/02_ワークシート"}],
+     works:["取得（必須・仕入情報を取得して表示する部分）","確認","登録"],
+     tips:["画面項目定義および各DBテーブルとの整合性が取れているか",
+           "各テーブルへの検索/登録、エラーチェックのタイミングが把握できる処理フローか"]}),
+  B({title:"【演習8】グループレビュー（17:10まで）", type:"exercise", min:20,
+     pages:"進行用スライド p163",
+     refs:[{label:"進行用スライド", file:SE_DECK, note:"p163"}],
+     tips:["【入力チェック仕様】チェックに抜け漏れはないか？ いくつ洗い出した？ と件数で競わせる",
+           "【処理フロー】エラーチェックの順序は適切か／設計したDBから情報は取得できるか"]}),
+  B({title:"【演習8】解答解説・総括", min:20,
+     pages:"進行用スライド p164–176",
+     refs:[{label:"進行用スライド", file:SE_DECK, note:"p164–176"},
+           {label:"演習8 解答", file:"01_演習別資料/演習8_内部設計オンライン/03_解答"},
+           {label:"業務フロー", file:S_FLOW, note:"p5"}],
+     tips:["⚠ スライドは演習後解説25分想定だが枠は20分。巻いた分をここに回す",
+           "クライアント/サーバー両方で同じチェックをする理由（p165–167）＝クライアント側は設定で無効化できる",
+           "★発注伝票内の日付の整理（p168–169）はDay1 p18の再登場。3日間の縦串として締めに使える",
+           "重複レコードのチェックは登録ボタン押下時ではないタイミングで（p174）"]})
+];
+
+/* ============================================================
+   ソリューション営業のための生成AIセキュア活用実践（公開講座・2日間・09:30–17:00）
+   出典：ソリューション営業のための生成AIセキュア活用実践.pptx 全89枚
+         （1日目 p1–44 ＝ 台本 1-01〜1-44 ／ 2日目 p45–89 ＝ 台本 2-01〜）
+   進行：03_講師台本.md。少人数・Zoom。365 Copilotは必須ではない。
+   削らない：デモA、デモC、デモD、誤送信・幻覚・シャドーAI、グリーンゾーン、WS-5
+   ============================================================ */
+const SOL_BASE = "教材/ソリューション営業/";
+const F_SOL = "ソリューション営業のための生成AIセキュア活用実践.pptx";
+const F_SOL_SCRIPT = "03_講師台本.md";
+const F_SOL_WS = "04_演習ワークシート.md";
+const F_SOL_DEMO = "05_デモデータ_アオバ食品.md";
+const F_SOL_PROMPT = "06_付録_プロンプト集.md";
+const F_SOL_MD1 = "01_受講者配布スライド_1日目.md";
+const F_SOL_MD2 = "02_受講者配布スライド_2日目.md";
+
+const SOL_DAY1 = [
+  B({title:"開講：期待値を下げる／2日間の地図／アイスブレイク", min:30,
+     pages:"1-01〜1-05（テキスト p1–5）",
+     refs:[{label:"テキスト", file:F_SOL, note:"p1–5"},
+           {label:"講師台本", file:F_SOL_SCRIPT, note:"9:30–10:00"},
+           {label:"スライド原稿", file:F_SOL_MD1, note:"1-01〜1-05"}],
+     works:["問い：今日帰りに、何ができていたら満足か（一言）"],
+     tips:["全部マスターではなく「1つ持ち帰る」。公開講座・業界不問・Copilotなしでも成立する",
+           "講師が実演し、手元は任意。実在の顧客情報は使わない（セキュリティの予告でもある）",
+           "自己紹介は営業の言葉で。2日間の地図（1-04）は1分。アイスブレイクはチャット番号だけでも可",
+           "「Bは何人か」をメモ。Bの人には毎回「実名の顧客を使わないで」",
+           "時間を食うところ：自己紹介。一人30秒で止める"]}),
+  B({title:"2026年の地図：揃える／3層／Work IQ・Notebook・エージェント", min:50,
+     pages:"1-06〜1-12（テキスト p6–12）",
+     refs:[{label:"テキスト", file:F_SOL, note:"p6–12"},
+           {label:"講師台本", file:F_SOL_SCRIPT, note:"10:00–10:50"},
+           {label:"デモデータ", file:F_SOL_DEMO}],
+     works:["問い：今、自分の週でいちばん時間が消える『揃える』作業は何か"],
+     tips:["機能カタログをしない。層と、ChatGPTとの差だけ",
+           "営業の時間は提案そのものより「揃える」で減る。2026年は根拠付きの初稿",
+           "一般AI／社内Copilot／エージェントの3層。覚える語は Work IQ・Notebook・エージェントの3つ",
+           "今日の主人公は架空のアオバ食品（1-11）。見方は材料・速さ・人が直すところ（1-12）",
+           "言わない：モデル名の詳細比較、自社のライセンス価格、「AIが営業を置き換える」論"]}),
+  brk("①"),
+  B({title:"デモA 商談前90秒：事実／推測／欠け", min:75,
+     pages:"1-13〜1-19（テキスト p13–19）",
+     refs:[{label:"テキスト", file:F_SOL, note:"p13–19"},
+           {label:"講師台本", file:F_SOL_SCRIPT, note:"11:00–12:15"},
+           {label:"デモデータ", file:F_SOL_DEMO},
+           {label:"付録A-1", file:F_SOL_PROMPT, note:"商談前ブリーフィング"}],
+     works:["講師デモ（Outlook／予定をまたいで聞く）","出力を3色で実況（事実／推測／欠け）","今日聞く3問だけメモに残す真似",
+            "問い：この出力を、そのまま顧客に見せてよいか（正解：社内用の地図）"],
+     tips:["初日でいちばん効かせる。操作6–8分。事前にメールスレッド・火曜10時・初回メモ・付録A-1を開く",
+           "Outlookを全画面に。「今はメールと予定を読んでいます」と黙らない",
+           "4点セット（1-17）は出力のあとで見せる。先に型を長く説明しない",
+           "失敗：遅い／Work IQなし→スクショ。一般Chatしかない→本文を貼る（差は毎回貼る手間）。実在メールが混ざった→共有を止めデモアカウントへ",
+           "失敗例（1-19）は営業事故の話として短く。昼へ切るとき「午後は提案の初稿」と残す"]}),
+  B({title:"昼休憩", type:"lunch", min:60, at:"12:15"}),
+  B({title:"デモB 提案初稿：60点を4分、40点は人", min:70,
+     pages:"1-22〜1-28（テキスト p22–28）",
+     refs:[{label:"テキスト", file:F_SOL, note:"p22–28"},
+           {label:"講師台本", file:F_SOL_SCRIPT, note:"13:15–14:25"},
+           {label:"デモデータ", file:F_SOL_DEMO},
+           {label:"付録B-1／B-2", file:F_SOL_PROMPT, note:"骨→1枚だけ直す"}],
+     works:["Notebookの材料を見せて初稿（Quick create または PowerPoint Copilot）","6枚構成（1-26）と突き合わせ","1枚だけ直す（付録B-2）",
+            "問い：自分の提案で、絶対にAIに書かせたくない欄はどこか"],
+     tips:["美しさをほめない。送付用ではなく骨取り、と先に宣言",
+           "人が直す40点（1-27）＝提案の価値そのもの。価格・やらないこと・話す順はAIに任すと薄くなる",
+           "全部作り直しをしない。多いページは削る対象",
+           "失敗：Notebook不可→Wordに材料3つ貼り「6枚の骨」。英語／長い→その場でB-2。デザイン崩れも教材"]}),
+  brk("②"),
+  B({title:"デモC 市場1枚：要約ではなく翻訳。出典のない数字を捨てる", min:60,
+     pages:"1-30〜1-35（テキスト p30–35）",
+     refs:[{label:"テキスト", file:F_SOL, note:"p30–35"},
+           {label:"講師台本", file:F_SOL_SCRIPT, note:"14:35–15:35"},
+           {label:"デモデータ", file:F_SOL_DEMO},
+           {label:"付録C-1", file:F_SOL_PROMPT, note:"市場1枚"}],
+     works:["架空ニュース→1枚に制限","『アオバ食品に置き換えると』だけ音読","出典のない数字は赤で消す実況",
+            "問い：この1枚を、先方に送ってよいか（社内確認と出典が揃うまで送らない）"],
+     tips:["★削らないコマ。時間が押しても残す",
+           "3デモを表（1-35）で束ね、明日のコックピットを予告。「機能が3つ」ではなく「仕事が3つ」",
+           "出典なし数字を消す実況は、2日目の幻覚事例の伏線。ここでは長く説明しない",
+           "失敗：Web接地が弱い→本文貼り。一般論しか出ない→「製造部長が火曜に使える一言にして」"]}),
+  brk("③"),
+  B({title:"演習 WS-1：プロンプトは才能ではない。4点セットを1回書く", type:"exercise", min:55,
+     pages:"1-36〜1-40（テキスト p36–40）",
+     refs:[{label:"テキスト", file:F_SOL, note:"p36–40"},
+           {label:"講師台本", file:F_SOL_SCRIPT, note:"15:45–16:40"},
+           {label:"ワークシート WS-1", file:F_SOL_WS, note:"4点セット"},
+           {label:"プロンプト集", file:F_SOL_PROMPT}],
+     works:["悪い例／良い例（1-38）を音読","WS-1 を12分黙って書く","2–3人に「足した制約は何か」だけ聞く"],
+     tips:["完成文の朗読は不要。Bトラックは試行してよい",
+           "机間で見る3つ：役割がない／相手が「顧客」のまま（役職がない）／制約が「うまく」だけ",
+           "余り：同じテーマで製造部長向けと情シス向けに1行だけ変える"]}),
+  B({title:"1日目のまとめ：3行復唱／任意宿題", min:20,
+     pages:"1-41〜1-44（テキスト p41–44）",
+     refs:[{label:"テキスト", file:F_SOL, note:"p41–44"},
+           {label:"講師台本", file:F_SOL_SCRIPT, note:"16:40–17:00"},
+           {label:"ワークシート", file:F_SOL_WS, note:"任意宿題"}],
+     works:["3行復唱（揃える・60点と40点・事実／推測／欠け）","任意宿題：来週AIに揃えてほしいこと3つ（実名なし・10分）"],
+     tips:["明日は「月曜に開く1ページ」。退出前に開始時刻、WS-2以降があること、質問はチャット残し可",
+           "見る人／触る人を毎回一言で分ける、は明日も繰り返す"]})
+];
+
+/* ============================================================
+   ソリューション営業のための生成AIセキュア活用実践 Day2（09:30–17:00）
+   テキスト p45–89。台本の 2-xx を主、結合pptxのページを併記。
+   ============================================================ */
+const SOL_DAY2 = [
+  B({title:"再開：昨日の3行／任意宿題／月曜8:45", min:30,
+     pages:"2-01〜2-05（テキスト p45–49）",
+     refs:[{label:"テキスト", file:F_SOL, note:"p45–49"},
+           {label:"講師台本", file:F_SOL_SCRIPT, note:"9:30–10:00"},
+           {label:"スライド原稿", file:F_SOL_MD2, note:"2-01〜2-05"}],
+     works:["3行復唱","任意宿題を1人1つ（なければ講師の例）"],
+     tips:["昨日を思い出させてから月曜シナリオへ。アオバ食品で具体化する",
+           "所持状況を再度確認。昨日いなかった人向けに、視聴でも可と繰り返す"]}),
+  B({title:"コックピット構想＋デモD：Excel＋予定＋Notebook", min:75,
+     pages:"2-06〜2-13（テキスト p50–57）",
+     refs:[{label:"テキスト", file:F_SOL, note:"p50–57"},
+           {label:"講師台本", file:F_SOL_SCRIPT, note:"10:00–11:15"},
+           {label:"デモデータ", file:F_SOL_DEMO},
+           {label:"付録D-1", file:F_SOL_PROMPT, note:"月曜の1ページ"}],
+     works:["5行の案件Excel（北信物流＝3週間音信なし）","今週カレンダーを横に","Notebookに表と火曜アオバ食品","付録D-1→表にない確度や励ましを消す",
+            "問い：自分なら、この5項目のどれを最初に見るか"],
+     tips:["★削らないコマ。BIではない。項目は5つ。足さない",
+           "L1から始める理由＝公開講座、CRMがバラバラ。CRMは「書き出して表にする」。製品名は問わない",
+           "失敗：Excel Copilot不可→表を選択してチャットに貼る。優先順位が的外れ→根拠のない行は捨てる、が教材"]}),
+  brk("①"),
+  B({title:"演習 WS-2：自分のコックピット下書き（架空化）", type:"exercise", min:55,
+     pages:"2-14（テキスト p58）",
+     refs:[{label:"テキスト", file:F_SOL, note:"p58"},
+           {label:"講師台本", file:F_SOL_SCRIPT, note:"11:25–12:20"},
+           {label:"ワークシート WS-2", file:F_SOL_WS, note:"コックピット下書き"}],
+     works:["架空化ルール再掲（A社、金額は大中小）","15分執筆","希望者1–2人：表の中身より「危険の行を置けたか」"],
+     tips:["Bトラックがうまくいったら画面共有は任意。実名が見えたら止める",
+           "昼へ：午後は短いデモのあと、誤送信・幻覚・シャドーAIの3事例が本丸、と予告"]}),
+  B({title:"昼休憩", type:"lunch", min:60, at:"12:20"}),
+  B({title:"顧客管理と予定：下書きで止める習慣", min:60,
+     pages:"2-16〜2-22（テキスト p60–66）",
+     refs:[{label:"テキスト", file:F_SOL, note:"p60–66"},
+           {label:"講師台本", file:F_SOL_SCRIPT, note:"13:20–14:20"},
+           {label:"付録E-1／E-2", file:F_SOL_PROMPT, note:"今週の約束／メール下書き"}],
+     works:["Outlook：今週、自分が約束したこと（付録E-1）","アオバ食品へのメール下書き（付録E-2）","送信ボタンを押さない。カーソルを送付前チェック（2-20）へ"],
+     tips:["CRM講義をしない。顧客管理は記録の代替ではない",
+           "納期や効果数字が勝手に入っていたら、消す実況",
+           "L2/L3は地図だけ。今日は触らない。エージェントの送信は人、と午後へ橋を架ける"]}),
+  brk("②"),
+  B({title:"セキュリティ導入＋事例1 誤送信", min:25,
+     pages:"2-23〜2-29（テキスト p67–73）",
+     refs:[{label:"テキスト", file:F_SOL, note:"p67–73"},
+           {label:"講師台本", file:F_SOL_SCRIPT, note:"事例1"}],
+     works:["ゴールと3つの事故の地図（0–5分）","事例1：状況→壊れたもの→止め方",
+            "問い：このメール、何を1つだけ見れば事故は半分になるか（宛先／納期・数字）"],
+     tips:["ここからが講座名の『セキュア』。原則の暗記ではなく事故で止め方を残す",
+           "自社ルールがある人はそちらが優先、を冒頭と末尾で言う",
+           "下書きが丁寧だった、がポイント。混ざるのは未決の納期・材料にない効果金額・別顧客のCC",
+           "「AIが送った」は通らない。午前の送る前30秒は、この事例の予防だったと接続",
+           "エージェントが出てくるなら：下書きを先に進めるは事例1を自動で起こしうる。送信は人"]}),
+  B({title:"事例2 幻覚：出典のない数字を商談で踏み抜く", min:15,
+     pages:"2-30〜2-32（テキスト p74–76）",
+     refs:[{label:"テキスト", file:F_SOL, note:"p74–76"},
+           {label:"講師台本", file:F_SOL_SCRIPT, note:"事例2"}],
+     works:["状況→壊れたもの→止め方","問い：自分の提案で、幻覚が出たらいちばん恥ずかしい欄はどこか"],
+     tips:["デモB・Cで消した出典なし数字の、商談版。意図的な嘘ではない。自然な日本語が危ない",
+           "製造部長は同業に友達がいる、と言う。検証される前提",
+           "初稿の速さは残す。事例と数字の欄だけ人が持つ。「AIが書いたから」は先方に通用しない"]}),
+  B({title:"休憩（事例2のあと）", type:"break", min:5}),
+  B({title:"事例3 シャドーAI＋3事例の表＋権限", min:20,
+     pages:"2-33〜2-37（テキスト p77–81）",
+     refs:[{label:"テキスト", file:F_SOL, note:"p77–81"},
+           {label:"講師台本", file:F_SOL_SCRIPT, note:"事例3"}],
+     works:["状況→壊れたもの→止め方","3事例の表（2-36）を1分","問い：申請待ちの週、自分はどこまでなら家の道具で進めるか"],
+     tips:["会社のCopilotが使えない土曜、はよくある。貼ったのはメール全文と社外秘Excel",
+           "画面に「漏えいしました」とは出ない。使えない日は架空化するか手を止める。隠れて使うことは勧めない",
+           "誘導：公開情報と架空化まで。実名・添付は止める",
+           "表は原則の名前より「場所・入れるデータ・出す前」。権限は「見える範囲が広い＝事例1のCCと同じ型」と短く",
+           "押しているときは権限スライドを口頭1分に落とす"]}),
+  B({title:"演習 WS-3：入れてよいデータの仕分け", type:"exercise", min:10,
+     pages:"2-38（テキスト p82）",
+     refs:[{label:"テキスト", file:F_SOL, note:"p82"},
+           {label:"ワークシート WS-3", file:F_SOL_WS, note:"緑／黄／赤"},
+           {label:"講師台本", file:F_SOL_SCRIPT, note:"WS-3"}],
+     works:["個人で3分→割れた番号だけ取り上げる","このカードは3事例のどれで事故になるか"],
+     tips:["正解が割れるカード（匿名の案件表、実名なし下書き）は、それでよい。自社確認へ",
+           "議論で勝ち負けにしない。余りは割れたカードを1枚だけ深く"]}),
+  B({title:"グリーンゾーン＋持ち帰り4問＋WS-4", type:"exercise", min:25,
+     pages:"2-39〜2-41（テキスト p83–85）",
+     refs:[{label:"テキスト", file:F_SOL, note:"p83–85"},
+           {label:"ワークシート WS-4", file:F_SOL_WS, note:"自分ルール3つ"},
+           {label:"講師台本", file:F_SOL_SCRIPT, note:"WS-4"}],
+     works:["いちばんやりそうな事故を先に選ぶ","やらない／出す前はその事故の止め方","1つはグリーンゾーン（やってよいこと）"],
+     tips:["禁止で終わらせず、グリーンゾーンを先に渡す。恐怖話の盛りすぎはしない",
+           "言わない：特定ベンダーの脆弱性の再現、実在企業の事故の実名、自社テナントの設定手順",
+           "全体の問い（時間がなければ省略）：昨日いちばん効いたデモを実案件でやるなら、3事故のどれに近いか"]}),
+  brk("③"),
+  B({title:"30日プランと閉じ：WS-5は1つだけ", type:"exercise", min:40,
+     pages:"2-42〜2-48（テキスト p86–89）",
+     refs:[{label:"テキスト", file:F_SOL, note:"p86–89"},
+           {label:"講師台本", file:F_SOL_SCRIPT, note:"16:20–17:00"},
+           {label:"ワークシート WS-5", file:F_SOL_WS, note:"30日で試すこと1つ"}],
+     works:["週の型は4つまで（2-43）","WS-5 を8分。1つだけ","一人ずつ「明日最初に試すこと」","4つの持ち帰りを復唱"],
+     tips:["不安は誤送信／幻覚／場所のどれでも可。実在情報を演習に残さない、録画の取り扱い",
+           "終了後：チャット未回答は主催経由で文章回答。デモ用メールを放置しない（録画に残っていないか確認）",
+           "足りないときの削る順：L2/L3→アイスブレイク共有→権限スライド→WS-3全体FB。削らない：デモA/C/D、3事例、グリーンゾーン、WS-5"]})
+];
+
+/* ============================================================
+   ＳＥ向け共通スキル（２日間）
+   出典：第１〜５限テキスト（各pptx）＋演習課題1〜7（4.演習/1_問題）＋各限振り返り（3.振り返り）
+   設計方針：スライドに時間の印字が無いため、枚数と演習の重さから見積もり。
+   　　　　　資料自体の構成（1限=全体像／2・3限=アプリへの影響大／4・5限=共通化タスク）に
+   　　　　　沿ってDay1=1〜3限、Day2=4〜5限に分割。第3限（性能, 79枚）が最重量のためDay1が長め。
+   ============================================================ */
+const SC_BASE = "教材/SE共通スキル/";
+const SC1 = "1.テキスト/第１限_体制・タスク.pptx";
+const SC2 = "1.テキスト/第２限_運用.pptx";
+const SC3 = "1.テキスト/第３限_性能.pptx";
+const SC4 = "1.テキスト/第４限_標準化・共通部品.pptx";
+const SC5 = "1.テキスト/第５限_ライブラリ管理・開発テスト環境.pptx";
+const SC_EX1 = "4.演習/1_問題/演習課題１_問題.docx";
+const SC_EX2 = "4.演習/1_問題/演習課題２_問題.docx";
+const SC_EX3 = "4.演習/1_問題/演習課題３_問題.docx";
+const SC_EX4 = "4.演習/1_問題/演習課題４_問題.docx";
+const SC_EX5 = "4.演習/1_問題/演習課題５_問題.docx";
+const SC_EX6 = "4.演習/1_問題/演習課題６_問題.docx";
+const SC_EX7 = "4.演習/1_問題/演習課題７_問題.docx";
+const SC_R1 = "3.振り返り/1限目_振り返り.pptx";
+const SC_R2 = "3.振り返り/2限目_振り返り.pptx";
+const SC_R3 = "3.振り返り/3限目_振り返り.pptx";
+const SC_R4 = "3.振り返り/4限目_振り返り.pptx";
+const SC_R5 = "3.振り返り/5限目_振り返り.pptx";
+
+const SC_DAY1 = [
+  B({title:"第1限：体制・タスク（アプリと基盤の役割分担／開発工程とタスク）", type:"exercise", min:90,
+     pages:"全59枚",
+     refs:[{label:"第1限テキスト", file:SC1}, {label:"演習1課題", file:SC_EX1}],
+     works:["演習1：NRI標準フレームワークタスクの先行関係を矢印で整理"],
+     tips:["AE/TEの役割分担、システム構成の変遷、分業化による「ポテンヒット」増加の弊害を先に押さえる",
+           "工程定義（システム化構想〜移行リリース）とタスク全体図が本講座の縦串。以降の4限すべてがこの表に戻ってくる",
+           "演習1は小演習。矢印の先行関係を間違えやすいので解説を厚めに"]}),
+  brk("①"),
+  B({title:"第2限：運用 前半（システム運用と開発の関係）", min:50,
+     pages:"p1–33",
+     refs:[{label:"第2限テキスト", file:SC2, note:"前半"}],
+     tips:["運用設計べき・べからず集、運用タイムチャート、バッチ運用（ジョブ/ネット、突き抜け対策）が中心",
+           "「アプリ・基盤どちらの設計も運用作業に影響する」を到達目標として明示"]}),
+  B({title:"昼休憩", type:"lunch", min:60, at:"12:00"}),
+  B({title:"第2限：運用 後半（演習2／障害コール分析ケーススタディ）", type:"exercise", min:50,
+     pages:"p34–43",
+     refs:[{label:"第2限テキスト", file:SC2, note:"後半"}, {label:"演習2課題", file:SC_EX2}],
+     works:["演習2：運用タイムチャートのバッチ処理時間検証と方式検討",
+           "障害コール分析Q1・Q2：対応工数の計算（テキストp42–43に解答例あり）"],
+     tips:["演習2は店舗数×処理時間の計算が絡む中規模演習。電卓を用意させる",
+           "障害コールのケーススタディはテキストに解答例が載っているので、先に自力で解かせてから照合する"]}),
+  B({title:"第1限・第2限 振り返り", min:10,
+     refs:[{label:"第1限振り返り", file:SC_R1}, {label:"第2限振り返り", file:SC_R2}],
+     tips:["各限とも2枚構成の穴埋め＋演習振り返り。テンポよく進める"]}),
+  brk("②"),
+  B({title:"第3限：性能 前半（システムと性能の関係／演習3）", type:"exercise", min:90,
+     pages:"p1–60",
+     refs:[{label:"第3限テキスト", file:SC3, note:"前半"}, {label:"演習3課題", file:SC_EX3}],
+     works:["演習3：顧客要件を読んでリスクと感じる部分とその理由を整理"],
+     tips:["レスポンス性能／スループット性能／資源観点の3軸を先に整理してから演習3へ",
+           "演習3は「①顧客の要望」章に直結。要件定義時点でのリスク検知トレーニング"]}),
+  brk("③"),
+  B({title:"第3限：性能 後半（性能問題の6要因と対策／演習4）", type:"exercise", min:75,
+     pages:"p61–79",
+     refs:[{label:"第3限テキスト", file:SC3, note:"後半"}, {label:"演習4課題", file:SC_EX4}],
+     works:["演習4：現場事例6件の根本原因を選択肢から特定し、再発防止策を検討"],
+     tips:["①顧客の要望〜⑥考慮無しのDB利用、の6要因構成。最重量セクションなので時間厳守で進行",
+           "演習4は原因分析→対策の2段構成。①③⑤（設計・要件起因）と②④⑥（運用・実装起因）で分けて解説すると整理しやすい"]}),
+  B({title:"第3限 振り返り", min:10,
+     refs:[{label:"第3限振り返り", file:SC_R3}]})
+];
+
+/* ============================================================
+   ＳＥ向け共通スキル Day2（09:30–16:20）
+   ============================================================ */
+const SC_DAY2 = [
+  B({title:"第4限：標準化・共通部品 前半（標準化の考え方／障害事例／共通部品・ミドルウェア提供）", min:120,
+     pages:"前半",
+     refs:[{label:"第4限テキスト", file:SC4, note:"前半"}],
+     tips:["標準フレームワークにおける標準化の位置づけ→障害原因深掘りの事例（インシデント形式のミニクイズ）→共通部品・ミドルウェア提供、の順",
+           "「標準化・共通部品の具体例」パートはスライド数が非常に多い。時間が押したら代表例だけ抜粋して進める"]}),
+  brk("①"),
+  B({title:"第4限 後半（演習5：現場経験の振り返りワーク）", type:"exercise", min:30,
+     pages:"後半",
+     refs:[{label:"第4限テキスト", file:SC4, note:"後半"}, {label:"演習5課題", file:SC_EX5}],
+     works:["演習5：自身が経験した標準化・共通部品とその効果、無かったが欲しかったものを整理"],
+     tips:["個人の現場経験を書き出すワーク。正解のない演習なので、グループ共有の時間を優先する"]}),
+  B({title:"昼休憩", type:"lunch", min:60, at:"12:10"}),
+  B({title:"第4限 振り返り", min:10,
+     refs:[{label:"第4限振り返り", file:SC_R4}]}),
+  B({title:"第5限：ライブラリ管理（位置づけ／演習6：バージョン管理設計）", type:"exercise", min:80,
+     pages:"前半",
+     refs:[{label:"第5限テキスト", file:SC5, note:"前半"}, {label:"演習6課題", file:SC_EX6}],
+     works:["演習6：リポジトリのブランチ運用（トランク／リリースブランチ／マージ・タグ付け）を図に整理"],
+     tips:["演習6は複雑な演習。まず例題（1.0→1.0.1）を一緒に解いてから本問（1.X系／2.X系の分岐）に進む"]}),
+  brk("②"),
+  B({title:"第5限：開発・テスト環境提供（演習7：環境構成検討）", type:"exercise", min:60,
+     pages:"後半",
+     refs:[{label:"第5限テキスト", file:SC5, note:"後半"}, {label:"演習7課題", file:SC_EX7}],
+     works:["演習7：ブランド統合案件における開発・本番環境と段階リリース計画の検討"],
+     tips:["演習7はPh0〜Ph2の段階リリースが絡む。演習6のブランチ管理の知識を前提に進める"]}),
+  B({title:"第5限 振り返り", min:10,
+     refs:[{label:"第5限振り返り", file:SC_R5}]}),
+  B({title:"コース全体まとめ・質疑応答", min:20,
+     tips:["「プロジェクト全体を見て、うまく役割分担する」を締めのメッセージに",
+           "AE/TEに関係なく、共通化タスク（標準化・ライブラリ管理・性能・運用）を理解しておくことが本講座の狙い"]})
+];
+
+/* ============================================================
+   生成AI営業実践（45枚版・2日間・09:30–17:00）
+   出典：「スライドと時間割の対応（講師用）」＋ 研修スライド全45枚
+   説明＝講義とその場の短い問いかけ。実演＝操作または明示した出力例の説明。
+   個人＝受講者の作業。レビュー＝ペア確認と全体解説。休憩は研修時間に含めない。
+   この TT が Day1／Day2 両講座の元データ。ttBlocks() がコマへ展開する。
+   検算：1日目＝実研修360分＋昼食60分＋休憩30分＝450分（9:30〜17:00）。
+         2日目＝午前180分＋午後180分＋昼食60分＋休憩30分＝450分。実研修 合計720分。
+         スライド30のみ翌朝に3分の再説明。各枠の講義時間は該当スライドの説明時間合計と一致。
+   ============================================================ */
+const AI45_BASE = "教材/生成AI営業実践(45枚版)/";
+const DECK_FILE = "04_研修スライド(45枚).pptx";
+const TT_MD = "02_スライドと時間割の対応(講師用).md";
+const TT_FALLBACK = "利用不能の場合：架空資料、フェーズ2の講師用完成例、通常のOfficeへ切り替える。認証情報を共有しない。Copilotの画面・ファイル参照・生成操作は承認済みの研修環境で事前に検証する。アプリ枠は講師用出力例を用い、動作済み画面として説明しない。";
+
+const TT = [
+ {k:"D1-01", day:"1日目", t:"09:30–09:50", min:20, sl:"1–2",      exp:7,  demo:0,  solo:5,  rev:8,  title:"導入・事前診断",
+  d:"問題集の演習1の五場面にまず5分で回答。ペア5分・全体3分で迷いを共有。後の演習1で再検討する。"},
+ {k:"D1-02", day:"1日目", t:"09:50–10:35", min:45, sl:"3–7",      exp:20, demo:8,  solo:12, rev:5,  title:"生成AIの基本",
+  d:"実演8分：同一商談メモの一段落で依頼を改善。個人12分：依頼文と出力の根拠を点検。レビュー5分。"},
+ {k:"D1-03", day:"1日目", t:"10:45–11:35", min:50, sl:"8–13",     exp:18, demo:3,  solo:17, rev:12, title:"安全判断・演習1",
+  d:"実演3分：架空の入力可否例。個人17分：五場面の理由を作成。ペア8分・講師解説4分。"},
+ {k:"D1-04", day:"1日目", t:"11:35–12:20", min:45, sl:"14–18",    exp:20, demo:5,  solo:10, rev:10, title:"Copilotと他サービス",
+  d:"実演5分：承認済みアカウント・必要機能の確認箇所。個人10分：学習と保存の違いを資料で確認。ペア5分・解説5分。管理者操作なし。"},
+ {k:"D1-05", day:"1日目", t:"13:20–14:10", min:50, sl:"19–23",    exp:15, demo:5,  solo:20, rev:10, title:"課題整理・演習2",
+  d:"実演5分：一段落の三列整理。個人20分：整理表と追加質問3つ。ペア6分・解説4分。"},
+ {k:"D1-06", day:"1日目", t:"14:20–15:30", min:70, sl:"24–27",    exp:14, demo:10, solo:30, rev:16, title:"Excel比較・演習3",
+  d:"実演10分：合計と一人当たりの数式。個人30分：比較・推薦条件。ペア10分・解説6分。"},
+ {k:"D1-07", day:"1日目", t:"15:40–16:40", min:60, sl:"28–29",    exp:8,  demo:10, solo:32, rev:10, title:"Word骨子・演習4前半",
+  d:"実演10分：一段落の骨子と根拠。個人32分：Word1〜2ページ。ペア6分・講師整理4分。"},
+ {k:"D1-08", day:"1日目", t:"16:40–17:00", min:20, sl:"30",       exp:3,  demo:0,  solo:7,  rev:10, title:"振り返り",
+  d:"個人7分：保存と自己点検。ペア6分・講師まとめ4分。"},
+ {k:"D2-01", day:"2日目", t:"09:30–09:45", min:15, sl:"30（再掲）", exp:3,  demo:0,  solo:7,  rev:5,  title:"前日の復習",
+  d:"個人7分：Wordを開き根拠と未確認事項を確認。ペア3分・全体2分。"},
+ {k:"D2-02", day:"2日目", t:"09:45–10:55", min:70, sl:"31–32",    exp:8,  demo:10, solo:37, rev:15, title:"PPT作成・演習4後半",
+  d:"実演10分：骨子から一枚へ転記し簡潔化。個人37分：5枚作成。ペア10分・全体5分。"},
+ {k:"D2-03", day:"2日目", t:"11:05–12:05", min:60, sl:"33–34",    exp:8,  demo:0,  solo:12, rev:40, title:"提案レビュー",
+  d:"ペア40分：交代して説明各8分・指摘各8分・相違点確認8分。個人12分：最終修正・提出。"},
+ {k:"D2-04", day:"2日目", t:"12:05–12:40", min:35, sl:"35–36",    exp:7,  demo:5,  solo:10, rev:13, title:"商談後対応・理解確認",
+  d:"実演5分：合意済みとAI提案を分離。個人10分：既存PPTの次の行動を修正。レビュー8分＋理解確認5問5分。"},
+ {k:"D2-05", day:"2日目午後", t:"13:40–14:10", min:30, sl:"37–38", exp:6,  demo:15, solo:5,  rev:4,  title:"アプリ紹介",
+  d:"出力例15分：同じ商談メモから議事録・下書き・対応一覧を順に確認（実機未確認）。個人5分：人の確認箇所を印す。全体4分。"},
+ {k:"D2-06", day:"2日目午後", t:"14:10–14:40", min:30, sl:"39–40", exp:8,  demo:5,  solo:12, rev:5,  title:"AI処理と人の確認",
+  d:"実演5分：不明な担当・期限を要確認へ戻す。個人12分：生成例を照合。ペア3分・全体2分。"},
+ {k:"D2-07", day:"2日目午後", t:"14:50–15:20", min:30, sl:"41",    exp:5,  demo:0,  solo:20, rev:5,  title:"業務整理・演習5",
+  d:"個人20分：構想シート前半3項目。ペア3分・全体2分。"},
+ {k:"D2-08", day:"2日目午後", t:"15:20–16:00", min:40, sl:"42",    exp:5,  demo:5,  solo:25, rev:5,  title:"構想作成・演習5",
+  d:"実演5分：人の確認と指標の書き方。個人25分：後半3項目を加えて1枚。全体5分。"},
+ {k:"D2-09", day:"2日目午後", t:"16:10–16:40", min:30, sl:"43",    exp:3,  demo:0,  solo:0,  rev:27, title:"ペア共有",
+  d:"ペア22分：説明・質問を交代各8分、相互修正6分。全体5分。"},
+ {k:"D2-10", day:"2日目午後", t:"16:40–17:00", min:20, sl:"44–45", exp:5,  demo:0,  solo:10, rev:5,  title:"実践計画",
+  d:"個人10分：6項目の計画を手元に記す。ペア3分・全体2分。新規提出なし。"}
+];
+
+const TT_BREAKS = [
+ {day:"1日目", t:"10:35–10:45", min:10, lunch:false},
+ {day:"1日目", t:"12:20–13:20", min:60, lunch:true},
+ {day:"1日目", t:"14:10–14:20", min:10, lunch:false},
+ {day:"1日目", t:"15:30–15:40", min:10, lunch:false},
+ {day:"2日目", t:"10:55–11:05", min:10, lunch:false},
+ {day:"2日目", t:"12:40–13:40", min:60, lunch:true},
+ {day:"2日目", t:"14:40–14:50", min:10, lunch:false},
+ {day:"2日目", t:"16:00–16:10", min:10, lunch:false}
+];
+
+/* "09:50–10:35" → 開始 "09:50" ／ 終了 "10:35" */
+const ttStart = t => String(t).split(/[–-]/)[0];
+const ttEnd   = t => String(t).split(/[–-]/)[1];
+
+/* 時間割 → コマ配列。休憩は「開始時刻＝直前の枠の終了時刻」で挟む */
+function ttBlocks(dp){
+  const dayName = dp === "D1" ? "1日目" : "2日目";
+  const rows = TT.filter(r => r.k.startsWith(dp + "-"));
+  const brks = TT_BREAKS.filter(b => b.day === dayName);
+  const out = [];
+  rows.forEach((r, i) => {
+    const works = [];
+    if(r.demo) works.push(`実演 ${r.demo}分`);
+    if(r.solo) works.push(`個人 ${r.solo}分`);
+    if(r.rev)  works.push(`レビュー ${r.rev}分`);
+    out.push(B({
+      title: `${r.k}　${r.title}`,
+      type: (r.solo + r.rev) > (r.exp + r.demo) ? "exercise" : "lecture",
+      min: r.min,
+      pages: `スライド ${r.sl}`,
+      refs: [{label:"研修スライド", file:DECK_FILE, note:`p${r.sl}`},
+             {label:"時間割（講師用）", file:TT_MD, note:r.k}],
+      works,
+      tips: [r.d, `内訳：説明${r.exp}／実演${r.demo}／個人${r.solo}／レビュー${r.rev}分（計${r.min}分）`]
+              .concat(i === 0 ? [TT_FALLBACK] : [])
+    }));
+    const b = brks.find(x => ttStart(x.t) === ttEnd(r.t));
+    if(b) out.push(b.lunch
+      ? B({title:"昼食", type:"lunch", min:b.min, at:ttStart(b.t)})
+      : B({title:`休憩（${b.t}）`, type:"break", min:b.min}));
+  });
+  return out;
+}
+const AI45_DAY1 = ttBlocks("D1");
+const AI45_DAY2 = ttBlocks("D2");
+
+/* ============================================================
+   生成AIセキュア活用（169枚版・2日間・09:30–17:00）
+   出典：01_カリキュラム・タイムテーブル.md ＋ 研修スライド全169枚
+   ストーリー：ELIソリューションズ（自社）× みらい商事（顧客）で提案一式を仕上げる
+   パートA（基礎・セキュリティ・Office連携）＝Day1全日＋Day2 〜13:45／585分・75%
+   パートB（自社アプリ紹介・業務応用）＝Day2 13:45–17:00／195分・25%
+   章とスライドの対応：1章 p7–27／2章 p28–40／3章 p41–62／4章 p63–71／5章 p72–79／
+   6章 p84–98／7章 p99–114／8章 p115–122／9章 p123–137／10章 p138–152／11章 p153–169
+   検算：Day1＝講義360＋休憩30＋昼60＝450分。Day2＝講義370＋休憩20＋昼60＝450分。
+   ============================================================ */
+const AI169_BASE = "教材/生成AIセキュア活用(169枚版)/";
+/* 教材フォルダ実測（2026-09-25／14ファイル・サブフォルダなし）。
+   スライド本体 F_A9 だけはこのフォルダに無いため、置き場所に合わせて要修正 */
+const F_A9       = "ソリューション営業のための生成AIセキュア活用実践.pptx";
+const M_KOKYAKU  = "01_顧客プロフィール.docx";
+const M_MASK     = "02_マスキング演習素材.docx";
+const M_OKOSHI   = "03_商談文字起こし_初回訪問.docx";
+const M_OKOSHI_T = "03_商談文字起こし_初回訪問.txt";
+const M_GUIDE    = "04_セキュア活用ガイドライン.docx";
+const M_JISSEKI  = "04_研修実績データ.xlsx";
+const M_TANKA    = "05_見積単価表.xlsx";
+const F_A9_TEACH = "05_講師ガイド.docx";
+const M_TEMPLATE = "06_提案書テンプレート.docx";
+const M_ENVCHECK = "06_環境準備チェックリスト.docx";
+const M_TEST     = "07_理解度確認テスト・アンケート.docx";
+const M_PROGRAM  = "07_研修プログラム案.docx";
+const M_WORKSHEET= "08_応用ワークシート.docx";
+const F_A9_MINI  = "09_ミニ演習集.docx";
+
+const A9_DAY1 = [
+  B({title:"オリエンテーション：ゴール・進め方・研修ストーリー", min:20,
+     pages:"スライド p1–6",
+     refs:[{label:"研修スライド", file:F_A9, note:"p1–6"},
+           {label:"講師ガイド", file:F_A9_TEACH},
+           {label:"環境準備チェックリスト", file:M_ENVCHECK}],
+     works:["アイスブレイク：生成AIの利用状況を A〜D から1つ選ぶ（1分）","自己紹介"],
+     tips:["研修ストーリー（ELIソリューションズ × みらい商事）をここで必ず通す。以降の全演習がこの1本の商談で繋がる",
+           "利用環境の確認を先に済ませる：Copilot のサインイン、OneDrive の自動保存",
+           "A〜Dの分布をメモしておく。Dが多ければ第2章の基本操作を厚めに、Aが多ければ演習を前倒しできる"]}),
+  B({title:"第1章 生成AIの進化と現状", min:50,
+     pages:"スライド p7–27",
+     refs:[{label:"研修スライド", file:F_A9, note:"p7–27"},
+           {label:"ミニ演習集", file:F_A9_MINI, note:"T-2／1-2〜1-6"},
+           {label:"講師ガイド", file:F_A9_TEACH, note:"3.5 ミニ演習の優先度"}],
+     works:["ミニ演習T-2：どのエンジニアリング？","ミニ演習1-2：同じ質問を言い回しを変えて聞き比べる（約5分）",
+            "ミニ演習1-3：AIの計算を検算する","ミニ演習1-4：任せる・確認する・決めるに仕分ける",
+            "ミニ演習1-5：自分の画面で機能を確認する","ミニ演習1-6：自分の営業で使える場面を書き出す"],
+     tips:["AIの歴史（ルールベース→機械学習→深層学習→Transformer）は流す。LLM＝次の単語の予測、に時間を使う",
+           "ミニ演習は全部やらない。優先度◎を選び、△は飛ばす（講師ガイド3.5）",
+           "1-3の検算は「AIは計算が苦手」を体で分からせる枠。ここを削ると第3章のファクトチェックが薄くなる",
+           "Microsoft 365 Premium で使える機能の範囲を、受講者の実環境と突き合わせて確認する"]}),
+  brk("①"),
+  B({title:"第2章 Copilot の基本操作とプロンプト設計／演習1〜3", type:"exercise", min:70,
+     pages:"スライド p28–40",
+     refs:[{label:"研修スライド", file:F_A9, note:"p28–40"},
+           {label:"ミニ演習集", file:F_A9_MINI, note:"2-1〜2-3"},
+           {label:"顧客プロフィール", file:M_KOKYAKU, note:"演習3"}],
+     works:["ミニ演習2-1〜2-3（4要素の見分け／6つのコツ）","演習1：基本操作ツアー（15分）",
+            "演習2：プロンプト改善ドリル（20分）","演習3：顧客・業界の事前調査（20分・出典つき）"],
+     tips:["プロンプトの4要素（役割・目的・前提・出力形式）は、以降の全演習で参照する型。ここで固定する",
+           "演習3は Web検索を使わせ、必ず出典を残させる。第3章のファクトチェックの伏線になる",
+           "★遅れている場合は演習3の発展課題を省略する。本筋のストーリーは崩れない"]}),
+  B({title:"昼休憩", type:"lunch", min:60, at:"12:00"}),
+  B({title:"第3章 セキュアに使うための留意点／演習4", type:"exercise", min:60,
+     pages:"スライド p41–62",
+     refs:[{label:"研修スライド", file:F_A9, note:"p41–62"},
+           {label:"ミニ演習集", file:F_A9_MINI, note:"3-1〜3-7"},
+           {label:"マスキング演習素材", file:M_MASK, note:"演習4"},
+           {label:"セキュア活用ガイドライン", file:M_GUIDE}],
+     works:["ミニ演習3-1〜3-7（各3〜5分）","演習4：入力OK/NG判定とマスキング（17分）"],
+     tips:["4大リスク＝情報漏えい・ハルシネーション・著作権・プロンプトインジェクション",
+           "★個人向け（Premium）と法人向け Copilot のデータ保護の違いは、この研修の核。曖昧にしない",
+           "入力してよい情報の3段階判定（A/B/C）とマスキングの4技法を、演習4で必ず手を動かさせる",
+           "22枚を60分。ミニ演習が7本あるので、解答スライドは読み上げずに要点だけ拾う"]}),
+  brk("②"),
+  B({title:"第4章 Word × Copilot（商談準備と議事録）／演習5・6", type:"exercise", min:80,
+     pages:"スライド p63–71",
+     refs:[{label:"研修スライド", file:F_A9, note:"p63–71"},
+           {label:"ミニ演習集", file:F_A9_MINI, note:"4-2・4-3"},
+           {label:"顧客プロフィール", file:M_KOKYAKU, note:"演習5"},
+           {label:"商談文字起こし", file:M_OKOSHI, note:"演習6"},
+           {label:"同・テキスト版", file:M_OKOSHI_T, note:"貼り付け用"}],
+     works:["ミニ演習4-2：話者を特定し、置き換える語句を挙げる","ミニ演習4-3：決定事項か、未確定事項か",
+            "演習5：ヒアリングシート作成（30分）","演習6：商談文字起こしから議事録作成（35分）"],
+     tips:["★演習6の議事録は Day1 演習7・8 の入力になる。ここで作れないと午後が止まるので時間を死守する",
+           "議事録の型＝決定事項と未確定事項を分ける。ミニ演習4-3で型を入れてから演習6へ",
+           "文字起こしは実名が入っている前提で、第3章のマスキングを実際に適用させる"]}),
+  brk("③"),
+  B({title:"第5章 商談後フォロー（メール・社内報告・行動管理）／演習7・8", type:"exercise", min:60,
+     pages:"スライド p72–79",
+     refs:[{label:"研修スライド", file:F_A9, note:"p72–79"},
+           {label:"ミニ演習集", file:F_A9_MINI, note:"5-1・5-2"}],
+     works:["ミニ演習5-1：メールの下書きの問題点を探す","ミニ演習5-2：受注確度を自分で決める",
+            "演習7：議事録と Next Action の送付メール（20分）","演習8：上長への商談報告・行動リスト・確認事項の一覧（25分）"],
+     tips:["社内報告の型＝結論→根拠→次の一手。相手（顧客／上長）でトーン・長さ・敬語を書き分けさせる",
+           "5-2は正解が1つではない。受注確度を自分で決めて根拠を言わせるのが狙い",
+           "★遅れている場合は演習8の発展課題を省略する"]}),
+  B({title:"Day1 振り返り", min:20,
+     pages:"スライド p80",
+     refs:[{label:"研修スライド", file:F_A9, note:"p80"}],
+     works:["学びの共有（1人3分）","「明日から使うこと」を1つ宣言","質疑応答"],
+     tips:["明日は提案一式を仕上げる日、と予告してから閉じる",
+           "演習6の議事録が手元にあるかを全員に確認する。無い人には解答例を配る"]})
+];
+
+const A9_DAY2 = [
+  B({title:"Day1 の復習：セキュリティ確認クイズ", type:"exercise", min:15,
+     pages:"スライド p81–83",
+     refs:[{label:"研修スライド", file:F_A9, note:"p81–83"},
+           {label:"ミニ演習集", file:F_A9_MINI, note:"D2-1"}],
+     works:["ミニ演習D2-1：セキュリティ確認クイズ（5問）","前日の成果物の確認"],
+     tips:["クイズは採点が目的ではない。間違いの多かった設問だけ第3章に戻って補足する",
+           "Day2 の流れ（提案一式を仕上げる）を先に見せてから本編へ"]}),
+  B({title:"第6章 Excel × Copilot（分析と概算）／演習9・10", type:"exercise", min:80,
+     pages:"スライド p84–98",
+     refs:[{label:"研修スライド", file:F_A9, note:"p84–98"},
+           {label:"ミニ演習集", file:F_A9_MINI, note:"6-1〜6-4"},
+           {label:"研修実績データ", file:M_JISSEKI, note:"演習9"},
+           {label:"見積単価表", file:M_TANKA, note:"演習10"}],
+     works:["ミニ演習6-1〜6-4（テーブル化／依頼文／提案書に書いてよい一文か／検算）",
+            "演習9：研修実績データの分析（40分）","演習10：A案・B案の概算見積（30分）"],
+     tips:["★テーブル化していないシートは Copilot が扱えない。6-1でそれを体感させてから演習9へ",
+           "生成された数式は必ず開いて確認させる。6-4の検算はここの締め",
+           "★遅れている場合は演習10の発展課題を省略する。A案・B案の金額は演習11の材料になるので本体は削らない"]}),
+  brk("①"),
+  B({title:"第7章 Word × Copilot（提案書）／演習11", type:"exercise", min:45,
+     pages:"スライド p99–114",
+     refs:[{label:"研修スライド", file:F_A9, note:"p99–114"},
+           {label:"ミニ演習集", file:F_A9_MINI, note:"7-2〜7-5"},
+           {label:"提案書テンプレート", file:M_TEMPLATE},
+           {label:"研修プログラム案", file:M_PROGRAM}],
+     works:["ミニ演習7-2〜7-5（書き直し／どちらの案／1枚への振り分け／最終チェック）",
+            "演習11：提案書（A案・B案）と上長説明用の1枚（35分）"],
+     tips:["⚠ 16枚を45分。構成を先に決めてから本文を生成する、という順序だけは必ず通す",
+           "複数ファイル参照（議事録・分析結果・見積）がこの章の肝。演習9〜10の成果物を開かせてから始める",
+           "提案書のチェックリスト（7.6）は演習11の自己点検にそのまま使わせる"]}),
+  B({title:"昼休憩", type:"lunch", min:60, at:"12:00"}),
+  B({title:"第8章 PowerPoint × Copilot（提案スライド）／演習12", type:"exercise", min:45,
+     pages:"スライド p115–122",
+     refs:[{label:"研修スライド", file:F_A9, note:"p115–122"},
+           {label:"ミニ演習集", file:F_A9_MINI, note:"8-2・8-3"}],
+     works:["ミニ演習8-2：見出しのスタイルを付ける","ミニ演習8-3：このスライドを1メッセージにする",
+            "演習12：上長説明用の1枚と提案スライド（35分）"],
+     tips:["Word ファイルからのスライド生成が主役。見出しスタイルが無いと生成が崩れるので8-2を先に",
+           "Designer での体裁調整と発表者ノートの作成まで見せる",
+           "★ここでパートAは終わり。提案一式（議事録・分析・見積・提案書・スライド）が揃ったことを確認して締める"]}),
+  B({title:"【パートB】第9章 自社アプリ ELI Sales Assist の紹介", min:45,
+     pages:"スライド p123–137",
+     refs:[{label:"研修スライド", file:F_A9, note:"p123–137"},
+           {label:"ミニ演習集", file:F_A9_MINI, note:"9-1・9-2・9-4・9-5"}],
+     works:["デモ：みらい商事の商談を登録してみる","ミニ演習9-1：Day1 の作業はアプリのどこ？",
+            "ミニ演習9-2：送信内容のプレビューで止める","ミニ演習9-4：どの対策で防ぐ？","ミニ演習9-5：アプリの限界 ○×"],
+     tips:["★ここからパートB（13:45〜17:00・195分・全体の25%）",
+           "商談後の3作業（議事録・メール下書き・行動管理）を1画面で扱う、が訴求点。Day1の手作業と必ず比較する",
+           "仕組み（LLM API・プロンプトテンプレート・構造化出力）と、組み込んだセキュリティ対策（マスキング・キー管理・ログ）まで説明する",
+           "9.6「アプリの限界」を飛ばさない。万能に見せると第10章の判断がぶれる"]}),
+  brk("②"),
+  B({title:"第10章 営業業務への応用ワークショップ／演習13・14", type:"exercise", min:100,
+     pages:"スライド p138–152",
+     refs:[{label:"研修スライド", file:F_A9, note:"p138–152"},
+           {label:"ミニ演習集", file:F_A9_MINI, note:"10-1〜10-4"},
+           {label:"応用ワークシート", file:M_WORKSHEET, note:"演習13"}],
+     works:["ミニ演習10-1〜10-4","演習13（企画トラック・全員）：業務応用プランの作成（70分）",
+            "演習14（開発トラック・希望者）：Codex で ELI Sales Assist を段階開発（70分）"],
+     tips:["★2トラック制。14:40–15:10 は全員が業務棚卸し→適用候補の選定（STEP1〜3）",
+           "15:10–16:20 で分岐：企画＝適用プランの具体化（STEP4〜5）／開発＝Codex でステージ0〜4（5〜7は持ち帰り）",
+           "開発トラックの受講者も、発表では「自分の業務のどこに使うか」を必ず話させる",
+           "開発トラックが1名なら講師はその画面を中心に見て、企画トラックは巡回で対応する",
+           "開発環境が無い受講者にも、講師画面で開発の様子（プロンプト→動作確認→不具合修正）を10分ほど見せる"]}),
+  B({title:"発表・共有：業務応用プラン", type:"exercise", min:25,
+     pages:"スライド p153–156",
+     refs:[{label:"研修スライド", file:F_A9, note:"p153–156"},
+           {label:"ミニ演習集", file:F_A9_MINI, note:"S-1"}],
+     works:["1人5分の発表","講師フィードバック","ミニ演習S-1：フィードバックを書いてみる"],
+     tips:["フィードバックの順序を固定する：良い点 → リスクの指摘 → 次の一歩の提案",
+           "受講者3名なので発表15分＋フィードバック10分が目安"]}),
+  B({title:"まとめ：振り返り・ガイドライン・理解度テスト", min:15,
+     pages:"スライド p157–169",
+     refs:[{label:"研修スライド", file:F_A9, note:"p157–169"},
+           {label:"セキュア活用ガイドライン", file:M_GUIDE, note:"4つの確認"},
+           {label:"理解度確認テスト・アンケート", file:M_TEST}],
+     works:["2日間の振り返り","セキュア活用ガイドライン（4つの確認）の再確認","理解度テスト（10問・10分）","アンケート"],
+     tips:["⚠ 13枚を15分。理解度テストとアンケートの時間を先に確保してから逆算する",
+           "ミニ演習S-2（総合ケース）は時間がなければ持ち帰りにする",
+           "Copilot が応答しない・上限に達した場合は、解答例の成果物を使って先へ進める"]})
+];
+
+/* ============================ 初期データ ============================ */
+function defaultState(){
+  const mk = (name, blocks, start, base) =>
+    ({id:uid(), name, start:start||"09:00", base:base||DB_BASE, blocks});
+  const courses = [
+    mk("DB設計研修 Day1（概念設計・ER図）", DB_DAY1),
+    mk("DB設計研修 Day2（正規化・履歴・性能）", DB_DAY2),
+    mk("SE外部・内部設計 Day1（オンライン設計①）", SE_DAY1, "09:30", SE_BASE),
+    mk("SE外部・内部設計 Day2（DB設計・オンライン設計②）", SE_DAY2, "09:30", SE_BASE),
+    mk("SE外部・内部設計 Day3（バッチ設計・内部設計）", SE_DAY3, "09:30", SE_BASE),
+    /* ソリューション営業 Day1/Day2 は一覧から外した。SOL_DAY1・SOL_DAY2 の定義は
+       上にそのまま残してあるので、mk(...) の2行を書き戻せば再び表示できる */
+    mk("生成AI営業実践 45枚版 Day1（基本・安全・Office演習）", AI45_DAY1, "09:30", AI45_BASE),
+    mk("生成AI営業実践 45枚版 Day2（提案レビュー・アプリ・構想）", AI45_DAY2, "09:30", AI45_BASE),
+    mk("生成AIセキュア活用 169枚版 Day1（基礎・セキュリティ・Word）", A9_DAY1, "09:30", AI169_BASE),
+    mk("生成AIセキュア活用 169枚版 Day2（Excel・提案書・アプリ応用）", A9_DAY2, "09:30", AI169_BASE),
+    mk("SE共通スキル Day1（体制・運用・性能）", SC_DAY1, "09:30", SC_BASE),
+    mk("SE共通スキル Day2（標準化・ライブラリ管理）", SC_DAY2, "09:30", SC_BASE)
+  ];
+  return {packId:PACK_ID, courses, activeId:courses[0].id, run:null, muted:false};
+}
+
+let S = load(), peek = null;   // peek = タイムラインで下見中のindex
+
+/* 他PCの絶対パスを、このパッケージ内の相対パスへ直す */
+function knownBaseFor(s){
+  const t = String(s||"");
+  if(/DB設計/.test(t)) return DB_BASE;
+  if(/SE外部|内部設計/.test(t)) return SE_BASE;
+  if(/45枚版/.test(t)) return AI45_BASE;
+  if(/169枚版/.test(t)) return AI169_BASE;
+  if(/ソリューション営業|生成AI/.test(t)) return SOL_BASE;
+  if(/SE共通スキル/.test(t)) return SC_BASE;
+  return "";
+}
+function isAbsPath(s){
+  return /^[A-Za-z]:/.test(s) || s.startsWith("/Users/") || s.startsWith("\\\\") || s.startsWith("file:");
+}
+function relativizeBase(base){
+  if(!base) return "";
+  let s = String(base).replace(/\\/g,"/");
+  if(s.startsWith("file:///")) s = decodeURI(s.slice(8));
+  if(!s.endsWith("/")) s += "/";
+  if(!isAbsPath(s)){
+    if(s.startsWith("教材/")) return s;
+    const kb = knownBaseFor(s);
+    return kb || s;
+  }
+  const i = s.indexOf("/教材/");
+  if(i >= 0){
+    const rest = s.slice(i+1);
+    return rest.endsWith("/") ? rest : rest + "/";
+  }
+  return knownBaseFor(s);
+}
+function relativizeFile(file){
+  if(!file) return file;
+  let s = String(file).replace(/\\/g,"/");
+  if(s.startsWith("file:///")) s = decodeURI(s.slice(8));
+  if(!isAbsPath(s)) return file.replace(/\\/g,"/");
+  const markers = ["講師用/","1.テキスト/","4.演習/","3.振り返り/","2.参考/","00_事前学習資料/","01_演習別資料/","02_演習課題/"];
+  for(const m of markers){
+    const i = s.indexOf(m);
+    if(i >= 0) return s.slice(i);
+  }
+  const j = s.indexOf("/教材/");
+  if(j >= 0){
+    const rest = s.slice(j + "/教材/".length);
+    const slash = rest.indexOf("/");
+    return slash >= 0 ? rest.slice(slash+1) : rest;
+  }
+  return s.split("/").pop();
+}
+function portableize(d){
+  if(!d || !Array.isArray(d.courses)) return d;
+  d.packId = PACK_ID;
+  d.courses.forEach(c => {
+    c.base = relativizeBase(c.base || knownBaseFor(c.name));
+    (c.blocks||[]).forEach(b => {
+      (b.refs||[]).forEach(r => { if(r && r.file) r.file = relativizeFile(r.file); });
+    });
+  });
+  return d;
+}
+/* defaultState() に後から追加されたコース（名前で判定）を、保存済みデータへ差分反映する */
+function mergeNewCourses(d){
+  const drop = new Set([
+    "ソリューション営業 生成AIセキュア活用 Day1（デモA〜C）",
+    "ソリューション営業 生成AIセキュア活用 Day2（コックピット・セキュア）",
+    "生成AIセキュア活用実践 Day1（安全判断・顧客理解）",
+    "生成AIセキュア活用実践 Day2（成果物・総合演習）",
+    "要件定義",
+    "SE共通スキル",
+    "詳細設計・単体テスト"
+  ]);
+  d.courses = d.courses.filter(c => !drop.has(c.name));
+  const have = new Set(d.courses.map(c => c.name));
+  defaultState().courses.forEach(c => { if(!have.has(c.name)) d.courses.push(c); });
+  if(!d.courses.some(c => c.id === d.activeId) && d.courses[0]) d.activeId = d.courses[0].id;
+}
+function load(){
+  try{ OLD_KEYS.forEach(k => localStorage.removeItem(k)); }catch(e){ /* ignore */ }
+  try{
+    const raw = localStorage.getItem(KEY);
+    if(raw){
+      const d = JSON.parse(raw);
+      if(d && Array.isArray(d.courses) && d.courses.length){
+        portableize(d);
+        mergeNewCourses(d);
+        return d;
+      }
+    }
+  }catch(e){ console.warn("保存データの読み込みに失敗:", e); }
+  return defaultState();
+}
+function save(){
+  try{
+    S.packId = PACK_ID;
+    portableize(S);
+    localStorage.setItem(KEY, JSON.stringify(S));
+  }catch(e){ /* file:// 制限等 */ }
+}
+const course = () => S.courses.find(c => c.id === S.activeId) || S.courses[0];
+
+/* ============================ 時刻ユーティリティ ============================ */
+const pad = n => String(n).padStart(2,"0");
+function hmToMs(hm){ const [h,m] = hm.split(":").map(Number); const d = new Date(); d.setHours(h,m,0,0); return d.getTime(); }
+function msToHm(ms){ const d = new Date(ms); return pad(d.getHours()) + ":" + pad(d.getMinutes()); }
+function fmtDur(ms){
+  const over = ms < 0; let s = Math.floor(Math.abs(ms)/1000);
+  const h = Math.floor(s/3600); s -= h*3600;
+  const m = Math.floor(s/60); s -= m*60;
+  return (over ? "+" : "") + (h > 0 ? `${h}:${pad(m)}:${pad(s)}` : `${pad(m)}:${pad(s)}`);
+}
+const fmtDiff = min => (min > 0 ? "+" : min < 0 ? "−" : "±") + Math.abs(min) + "分";
+const esc = s => String(s).replace(/[&<>"]/g, m => ({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;"}[m]));
+function fileUrl(base, f){
+  const p = /^[A-Za-z]:/.test(f) ? f : (base || "") + f;
+  const norm = p.replace(/\\/g,"/");
+  /* ドライブレター付き(絶対パス)なら file:///、それ以外(相対パス)は
+     このHTML自身の場所からの相対リンクとして解決させる（他PCへ folder ごと
+     コピーしても動くように、file:/// を付けない） */
+  return /^[A-Za-z]:/.test(norm) ? "file:///" + encodeURI(norm) : encodeURI(norm);
+}
+
+/* ============================ テンプレート生成 ============================ */
+function genBlocks({start, session, brkMin, lunch, lunchMin, end}){
+  const out = []; let cur = hmToMs(start);
+  const lunchMs = hmToMs(lunch), endMs = hmToMs(end);
+  let lunchDone = lunchMin <= 0, n = 1, guard = 0;
+  while(cur < endMs && guard++ < 40){
+    if(!lunchDone && cur + session*60000 > lunchMs){
+      if(lunchMs > cur) out.push(B({title:"（午前の残り）", min:Math.round((lunchMs-cur)/60000)}));
+      out.push(B({title:"昼休憩", type:"lunch", min:lunchMin, at:lunch}));
+      cur = lunchMs + lunchMin*60000; lunchDone = true; continue;
+    }
+    const min = Math.min(session, Math.round((endMs-cur)/60000));
+    if(min <= 0) break;
+    out.push(B({title:`第${n}コマ`, min})); cur += min*60000; n++;
+    if(brkMin > 0 && cur + brkMin*60000 < endMs){ out.push(B({title:"休憩", type:"break", min:brkMin})); cur += brkMin*60000; }
+  }
+  return out;
+}
+
+/* ============================ 進行計算 ============================ */
+function planTimes(c){
+  const out = []; let cur = hmToMs(c.start);
+  for(const b of c.blocks){ if(b.at) cur = hmToMs(b.at); out.push(cur); cur += b.min*60000; }
+  out.push(cur); return out;
+}
+function projTimes(c, run, now){
+  if(!run) return planTimes(c);
+  const out = []; let cur;
+  for(let i=0;i<c.blocks.length;i++){
+    const b = c.blocks[i];
+    if(i < run.idx){ out.push(run.done[i] ? run.done[i].start : hmToMs(c.start)); continue; }
+    if(i === run.idx){ out.push(run.startedMs); cur = now + remainMs(c, run, now); continue; }
+    if(b.at && hmToMs(b.at) > cur) cur = hmToMs(b.at);
+    out.push(cur); cur += b.min*60000;
+  }
+  out.push(cur != null ? cur : hmToMs(c.start));
+  return out;
+}
+const elapsedMs = (run, now) => run ? (run.paused ? run.pausedMs : now - run.startedMs) : 0;
+function remainMs(c, run, now){
+  const b = c.blocks[run.idx]; if(!b) return 0;
+  return b.min*60000 + (run.adjMs||0) - elapsedMs(run, now);
+}
+
+/* ============================ 描画 ============================ */
+const $ = id => document.getElementById(id);
+let lastBeep = null;
+
+function renderCourseSel(){
+  $("courseSel").innerHTML = S.courses.map(c =>
+    `<option value="${c.id}"${c.id===S.activeId?" selected":""}>${esc(c.name)}</option>`).join("");
+}
+
+function renderTimeline(){
+  const c = course(), now = Date.now();
+  const plan = planTimes(c), proj = projTimes(c, S.run, now);
+  $("timeline").innerHTML = c.blocks.map((b,i) => {
+    const state = (!S.run ? "" : i < S.run.idx ? "done" : i === S.run.idx ? "now" : "") + (peek === i ? " sel" : "");
+    const dmin = Math.round((proj[i] - plan[i]) / 60000);
+    const cls = dmin >= 1 ? "late" : dmin <= -1 ? "early" : "";
+    const projTxt = (!S.run || i < S.run.idx) ? "" : msToHm(proj[i]);
+    const pg = b.pages ? `<span class="pg">${esc(b.pages.replace("テキスト ",""))}</span>` : "";
+    const ad = (b.addons && b.addons.length) ? ` <span style="color:var(--fuchsia-t)">＋${b.addons.length}</span>` : "";
+    return `<div class="row t-${b.type} ${state}" data-i="${i}">
+      <div class="plan">${msToHm(plan[i])}</div>
+      <div class="proj ${cls}">${projTxt}</div>
+      <div class="ttl">${esc(b.title)}${pg}${ad}</div>
+      <div class="min">${b.min}分</div>
+      <div class="tag">${TYPES[b.type]}</div>
+    </div>`;
+  }).join("") || `<div class="empty">コマがありません。下のテンプレート生成をどうぞ。</div>`;
+
+  $("sStart").textContent = c.start;
+  $("sProg").textContent = (S.run ? Math.min(S.run.idx + 1, c.blocks.length) : 0) + " / " + c.blocks.length;
+  const endPlan = plan[plan.length-1], endProj = proj[proj.length-1];
+  $("sEnd").textContent = c.blocks.length ? msToHm(endProj) : "--:--";
+  const dmin = c.blocks.length ? Math.round((endProj - endPlan)/60000) : 0;
+  $("sDiff").textContent = fmtDiff(dmin);
+  $("sDiffBox").className = "stat " + (dmin >= 1 ? "behind" : dmin <= -1 ? "ahead" : "ontime");
+}
+
+function renderEdit(){
+  const c = course();
+  $("startTime").value = c.start;
+  $("editList").innerHTML = c.blocks.map((b,i) => `
+    <div class="row t-${b.type}" data-i="${i}">
+      <input type="text" data-f="title" value="${esc(b.title)}">
+      <input type="number" data-f="min" value="${b.min}" min="1" step="5">
+      <select data-f="type">${Object.entries(TYPES).map(([k,v])=>
+        `<option value="${k}"${k===b.type?" selected":""}>${v}</option>`).join("")}</select>
+      <span style="display:flex;gap:4px">
+        <button class="btn xs ghost" data-act="up">↑</button>
+        <button class="btn xs ghost" data-act="down">↓</button>
+        <button class="btn xs ghost" data-act="del">✕</button>
+      </span>
+    </div>`).join("");
+}
+
+/* ---- L2：教材・演習・追加演習パネル ---- */
+function matBlockIndex(){ return peek != null ? peek : (S.run ? S.run.idx : 0); }
+function renderMat(){
+  const c = course();
+  const i = matBlockIndex();
+  const b = c.blocks[i];
+  $("peekTag").textContent = (peek != null && (!S.run || peek !== S.run.idx)) ? "（下見中：クリックで解除）" : "";
+  if(!b){ $("mat").innerHTML = ""; return; }
+
+  const secs = [];
+
+  const refChips = (b.refs||[]).map((r,ri) => `<span class="refchip">
+      <a class="chip" href="${fileUrl(c.base, r.file)}" target="_blank" rel="noopener">${esc(r.label)}${r.note?`<span class="pg">${esc(r.note)}</span>`:""}</a>
+      <button class="chipdel" data-del-ref="${ri}" title="この資料を削除">✕</button>
+    </span>`).join("");
+  secs.push(`<div class="sec"><div class="hd">教材${b.pages?" ・ "+esc(b.pages):""}</div><div class="chips">${refChips}<button class="chip addchip" data-add-ref>＋資料を追加</button></div></div>`);
+
+  if(b.works && b.works.length)
+    secs.push(`<div class="sec"><div class="hd">演習・ワーク</div><div class="chips">${
+      b.works.map(w=>`<span class="chip work">${esc(w)}</span>`).join("")}</div></div>`);
+
+  if(b.tips && b.tips.length)
+    secs.push(`<div class="sec"><div class="hd">進め方ポイント</div><ul class="tips">${
+      b.tips.map(t=>`<li>${esc(t)}</li>`).join("")}</ul></div>`);
+
+  if(b.addons && b.addons.length){
+    const list = b.addons.map(a => {
+      const m = ADDONS[a.no]; if(!m) return "";
+      return `<div class="addon">
+        <div class="t"><span class="no">追加${a.no}</span>${esc(m.t)}<span class="mm">${a.min||m.m}分</span></div>
+        <div class="a">接続：<b>${esc(a.anchor)}</b></div>
+        <div class="a">狙い：${esc(m.k)}　／　スライド ${esc(m.s)}</div>
+        <div class="acts">
+          <a class="btn xs" href="${fileUrl(c.base, F_ADDON)}" target="_blank" rel="noopener">スライドを開く</a>
+          <button class="btn xs" data-addon="${a.no}" data-min="${a.min||m.m}">この演習を差し込む</button>
+        </div></div>`;
+    }).join("");
+    secs.push(`<div class="sec"><div class="hd">追加演習 候補（巻いた時のみ）</div>${list}</div>`);
+  }
+  const ns = netaFor(b);
+  if(ns.length) secs.push(`<div class="sec"><div class="hd">ネタ（5〜10分・${ns.length}本）</div>${ns.map(netaHtml).join("")}</div>`);
+
+  $("mat").innerHTML = secs.join("");
+}
+
+function netaHtml(n){
+  return `<details class="neta">
+    <summary><span class="nt">${esc(n.t)}</span><span class="nm">${n.min}分</span></summary>
+    <div class="body">
+      <div class="hook">${esc(n.hook)}</div>
+      <ul>${n.pts.map(p=>`<li>${esc(p)}</li>`).join("")}</ul>
+      <div class="use">使いどころ：${esc(n.use)}</div>
+      ${n.src.length ? `<div class="src">${n.src.map(s=>
+        `<a href="${esc(s.u)}" target="_blank" rel="noopener">${esc(s.l)}</a>`).join("")}</div>` : ""}
+    </div></details>`;
+}
+function renderBook(){
+  const q = $("bookQ").value.trim();
+  const list = q ? NETA.filter(n => (n.t+n.hook+n.pts.join("")+n.use+n.k.join("")).includes(q)) : NETA;
+  $("bookList").innerHTML = list.length
+    ? list.map(netaHtml).join("")
+    : `<div class="empty">「${esc(q)}」に一致するネタはありません。</div>`;
+}
+
+function renderRun(){
+  const c = course(), now = Date.now();
+  const projecting = $("project").classList.contains("on");
+  if(!S.run || !c.blocks[S.run.idx]){
+    $("nowTitle").textContent = S.run ? "全コマ終了" : "未開始";
+    $("nowSub").textContent = S.run ? "お疲れさまでした" : "開始を押すと最初のコマが始まります";
+    $("bigTime").textContent = "--:--"; $("bigTime").className = "big";
+    $("bar").className = "bar"; $("bar").firstElementChild.style.width = "0%";
+    $("btnStart").textContent = "開始"; $("nextUp").textContent = "次：—";
+    if(projecting){ $("pTitle").textContent = "—"; $("pBig").textContent = "--:--"; $("pNext").textContent = "—"; }
+    return;
+  }
+  const b = c.blocks[S.run.idx];
+  const total = b.min*60000 + (S.run.adjMs||0);
+  const rem = remainMs(c, S.run, now);
+  const pct = Math.max(0, Math.min(100, (1 - rem/total) * 100));
+  const cls = rem < 0 ? "over" : rem <= 60000 ? "warn1" : rem <= 300000 ? "warn5" : "";
+
+  $("nowTitle").textContent = b.title;
+  $("nowSub").textContent = `${TYPES[b.type]}／${msToHm(S.run.startedMs)}開始・予定${Math.round(total/60000)}分・終了予定${msToHm(now + rem)}`;
+  $("bigTime").textContent = fmtDur(rem);
+  $("bigTime").className = "big " + cls;
+  $("bar").className = "bar " + cls;
+  $("bar").firstElementChild.style.width = pct + "%";
+  $("btnStart").textContent = S.run.paused ? "再開" : "一時停止";
+  const nb = c.blocks[S.run.idx+1];
+  $("nextUp").innerHTML = nb ? `次：<b>${esc(nb.title)}</b>（${TYPES[nb.type]} ${nb.min}分）` : "次：— 最終コマです";
+
+  if(projecting){
+    $("pTitle").textContent = b.type === "break" || b.type === "lunch" ? b.title : b.title;
+    $("pBig").textContent = fmtDur(rem);
+    $("pBig").className = "pbig " + cls;
+    $("pNext").textContent = nb ? `次：${nb.title}　${msToHm(now + rem)} 再開` : "本日終了";
+  }
+  beepCheck(rem);
+}
+function render(){ renderCourseSel(); renderTimeline(); renderEdit(); renderRun(); renderMat(); }
+
+/* ============================ 予鈴 ============================ */
+let ac = null;
+function beep(freq, dur, vol){
+  if(S.muted) return;
+  try{
+    ac = ac || new (window.AudioContext||window.webkitAudioContext)();
+    const o = ac.createOscillator(), g = ac.createGain();
+    o.type = "sine"; o.frequency.value = freq;
+    g.gain.setValueAtTime(vol, ac.currentTime);
+    g.gain.exponentialRampToValueAtTime(.001, ac.currentTime + dur);
+    o.connect(g); g.connect(ac.destination); o.start(); o.stop(ac.currentTime + dur);
+  }catch(e){ /* 音が出せない環境は無視 */ }
+}
+function beepCheck(rem){
+  for(const m of [300000, 60000, 0]){
+    if(rem <= m && rem > m - 1200){
+      const k = S.run.idx + ":" + m;
+      if(lastBeep !== k){ lastBeep = k; m === 0 ? (beep(880,.5,.25), setTimeout(()=>beep(660,.7,.25),450)) : beep(760,.18,.18); }
+    }
+  }
+}
+
+/* ============================ 操作 ============================ */
+function startBlock(i){
+  const c = course();
+  S.run = S.run || {idx:0, done:[], adjMs:0, paused:false, pausedMs:0};
+  if(i >= c.blocks.length){ S.run.idx = i; save(); render(); return; }
+  S.run.idx = i; S.run.startedMs = Date.now(); S.run.paused = false; S.run.pausedMs = 0; S.run.adjMs = 0;
+  peek = null; lastBeep = null; save(); render();
+}
+function nextBlock(){
+  if(!S.run){ startBlock(0); return; }
+  S.run.done[S.run.idx] = {start:S.run.startedMs, end:Date.now()};
+  startBlock(S.run.idx + 1);
+}
+function insertAt(block){
+  const c = course();
+  c.blocks.splice(S.run ? S.run.idx + 1 : 0, 0, block);
+  save(); render();
+}
+// prompt が使えない環境（サンドボックス等）では既定値で差し込む
+function ask(msg, def){ try{ return prompt(msg, def); }catch(e){ return def; } }
+function insertPrompt(type){
+  const label = type === "exercise" ? "演習" : "休憩";
+  const title = ask(`差し込む${label}の名前`, label); if(title === null) return;
+  const raw = ask("時間（分）", type === "exercise" ? "15" : "10"); if(raw === null) return;
+  const min = parseInt(raw, 10);
+  if(!min || min < 1) return;
+  insertAt(B({title:title || label, type, min}));
+}
+
+/* ============================ 資料から自動生成 ============================
+   PowerPoint(.pptx)/PDFを解析し、スライド枚数・本文中の「n分」表記から
+   コマ割りを機械的に見積もる。あくまで自動見積り＝要確認。
+   ============================================================ */
+let GEN_FILES = [];   // [{name, kind:'pptx'|'pdf', file:File}]
+
+function loadScript(src){
+  return new Promise((resolve, reject) => {
+    if(document.querySelector(`script[src="${src}"]`)) return resolve();
+    const s = document.createElement("script");
+    s.src = src; s.onload = () => resolve(); s.onerror = () => reject(new Error("読み込み失敗: " + src));
+    document.head.appendChild(s);
+  });
+}
+async function ensureParsers(){
+  if(!window.JSZip) await loadScript("https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js");
+  if(!window.pdfjsLib){
+    await loadScript("https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js");
+    if(window.pdfjsLib) pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+  }
+}
+function decodeXml(s){
+  return s.replace(/&lt;/g,"<").replace(/&gt;/g,">").replace(/&quot;/g,'"').replace(/&apos;/g,"'").replace(/&amp;/g,"&");
+}
+/* 「25分」「EXERCISE 3 | 30分」等の所要時間表記を検出。冒頭付近のみ見て、
+   本文中の日付・時刻・件数などの数値を誤検出しないようにする */
+function detectMin(text){
+  const head = text.slice(0, 80);
+  const nums = [...head.matchAll(/(\d{1,3})\s*分/g)].map(m => +m[1]).filter(n => n >= 5 && n <= 120);
+  return nums.length ? nums[0] : null;
+}
+async function parsePptx(file){
+  const zip = await JSZip.loadAsync(file);
+  const names = Object.keys(zip.files)
+    .filter(n => /^ppt\/slides\/slide\d+\.xml$/.test(n))
+    .sort((a,b) => (+a.match(/slide(\d+)/)[1]) - (+b.match(/slide(\d+)/)[1]));
+  const slides = [];
+  for(const n of names){
+    const xml = await zip.files[n].async("text");
+    const texts = [...xml.matchAll(/<a:t>([^<]*)<\/a:t>/g)].map(m => decodeXml(m[1]));
+    const joined = texts.join(" ").replace(/\s+/g," ").trim();
+    const title = (texts.find(t => t.trim().length >= 2) || "").slice(0, 60);
+    const no = +n.match(/slide(\d+)/)[1];
+    slides.push({no, title, text: joined, minHint: detectMin(joined)});
+  }
+  return slides;
+}
+async function parsePdf(file){
+  const buf = await file.arrayBuffer();
+  const pdf = await pdfjsLib.getDocument({data: buf}).promise;
+  const pages = [];
+  for(let i = 1; i <= pdf.numPages; i++){
+    const page = await pdf.getPage(i);
+    const content = await page.getTextContent();
+    const joined = content.items.map(it => it.str).join(" ").replace(/\s+/g," ").trim();
+    const title = (content.items.find(it => it.str.trim().length >= 2) || {str:""}).str.slice(0, 60);
+    pages.push({no:i, title, text: joined, minHint: detectMin(joined)});
+  }
+  return pages;
+}
+/* スライド/ページの列を「講義（時間未定）」と「演習（時間表記あり）」のセクションへ分割 */
+const GEN_MAX_LEC_SLIDES = 10; /* 時間表記の無い講義パートは、この枚数ごとに1コマへ区切る */
+function buildSections(fileResults){
+  const sections = [];
+  for(const fr of fileResults){
+    let buf = [];
+    const flush = () => {
+      if(!buf.length) return;
+      sections.push({
+        title: buf[0].title || fr.name.replace(/\.(pptx|pdf)$/i, ""),
+        type: "lecture", min: null, explicit: false,
+        slideCount: buf.length, file: fr.name,
+        range: buf.length > 1 ? `p${buf[0].no}–${buf[buf.length-1].no}` : `p${buf[0].no}`
+      });
+      buf = [];
+    };
+    for(const it of fr.items){
+      if(it.minHint != null){
+        flush();
+        sections.push({
+          title: it.title || `p${it.no}`, type: "exercise", min: it.minHint, explicit: true,
+          slideCount: 1, file: fr.name, range: `p${it.no}`
+        });
+      } else {
+        buf.push(it);
+        if(buf.length >= GEN_MAX_LEC_SLIDES) flush();
+      }
+    }
+    flush();
+  }
+  return sections;
+}
+const toMin = hm => { const [h,m] = hm.split(":").map(Number); return h*60+m; };
+function dayBudgetMin(startHM, endHM, lunchMin){
+  return Math.max(0, toMin(endHM) - toMin(startHM) - lunchMin);
+}
+/* 全セクションへ分の割当て：時間表記のあるセクションはそのまま優先し、
+   時間未定の講義セクションはスライド枚数比例で見積もる（枠を超える時は講義側だけ圧縮） */
+function assignMinutes(sections, totalBudget){
+  const lec = sections.filter(s => s.min == null);
+  if(lec.length === sections.length){
+    const totalSlides = sections.reduce((a,s) => a+s.slideCount, 0) || 1;
+    sections.forEach(s => { s.min = Math.max(10, Math.round(s.slideCount/totalSlides*totalBudget/5)*5); });
+    return;
+  }
+  lec.forEach(s => { s.min = Math.max(10, Math.min(60, s.slideCount*5)); });
+  const explicitSum = sections.filter(s => s.explicit).reduce((a,s) => a+s.min, 0);
+  let lecSum = lec.reduce((a,s) => a+s.min, 0);
+  const overflow = (explicitSum + lecSum) - totalBudget;
+  if(overflow > 0 && lecSum > 0){
+    const scale = Math.max(0.3, (lecSum - overflow) / lecSum);
+    lec.forEach(s => { s.min = Math.max(5, Math.round(s.min*scale/5)*5); });
+  }
+}
+/* セクション列を、指定日数の「1日あたり利用可能分数」に収まるよう貪欲に日割り */
+function packDays(sections, days, perDayBudget, breakMin){
+  const dayList = [];
+  let cur = [], curSum = 0, sinceBreak = 0;
+  const closeDay = () => { if(cur.length) dayList.push(cur); cur = []; curSum = 0; sinceBreak = 0; };
+  for(const s of sections){
+    if(sinceBreak >= 100 && cur.length && breakMin > 0){
+      cur.push({title:"休憩", type:"break", min:breakMin}); curSum += breakMin; sinceBreak = 0;
+    }
+    if(curSum + s.min > perDayBudget && cur.length) closeDay();
+    cur.push(s); curSum += s.min; sinceBreak += s.min;
+  }
+  closeDay();
+  if(dayList.length > days){
+    const merged = dayList.slice(days-1).flat();
+    dayList.length = days-1; dayList.push(merged);
+  }
+  while(dayList.length < days) dayList.push([]);
+  return dayList;
+}
+function toBlocks(items, startHM, lunchStartHM, lunchMin){
+  const lunchAt = toMin(lunchStartHM) - toMin(startHM);
+  const out = []; let acc = 0, lunchDone = lunchAt <= 0;
+  for(const s of items){
+    if(!lunchDone && acc + s.min > lunchAt){ out.push(B({title:"昼休憩", type:"lunch", min:lunchMin})); lunchDone = true; }
+    if(s.type === "break"){ out.push(B({title:s.title, type:"break", min:s.min})); acc += s.min; continue; }
+    const refs = s.file ? [{label:"資料", file:s.file, note:s.range}] : [];
+    out.push(B({title:s.title, type:s.type, min:s.min, pages:s.range, refs}));
+    acc += s.min;
+  }
+  if(!lunchDone) out.push(B({title:"昼休憩", type:"lunch", min:lunchMin}));
+  return out;
+}
+function createEmptyCourses(name, days, start, base){
+  const newCourses = [];
+  for(let i = 1; i <= days; i++) newCourses.push({id:uid(), name: days>1?`${name} Day${i}`:name, start, base, blocks:[]});
+  S.courses.push(...newCourses); S.activeId = newCourses[0].id; S.run = null; peek = null; save(); render();
+}
+async function runAutoGen(){
+  const name = $("genName").value.trim() || "新しい講座";
+  const days = Math.max(1, +$("genDays").value || 1);
+  const start = $("genStart").value || "09:30";
+  const end = $("genEnd").value || "16:50";
+  const lunchStart = $("genLunch").value || "12:00";
+  const lunchMin = +$("genLunchMin").value || 0;
+  const breakMin = +$("genBreakMin").value || 0;
+  const base = relativizeBase($("genBase").value.trim());
+
+  if(!GEN_FILES.length){ createEmptyCourses(name, days, start, base); closeGen(); return; }
+
+  $("genStatus").textContent = "解析ライブラリを読み込み中…";
+  try{ await ensureParsers(); }
+  catch(e){
+    alert("解析ライブラリの読み込みに失敗しました（インターネット接続が必要です）。資料なしで空コースを作成します。");
+    createEmptyCourses(name, days, start, base); closeGen(); return;
+  }
+
+  const fileResults = [];
+  for(const gf of GEN_FILES){
+    $("genStatus").textContent = `解析中… ${gf.name}`;
+    try{
+      const items = gf.kind === "pptx" ? await parsePptx(gf.file) : await parsePdf(gf.file);
+      fileResults.push({name: gf.name, items});
+    }catch(e){ $("genStatus").textContent = `${gf.name} の解析に失敗しました：${e.message}`; }
+  }
+  const sections = buildSections(fileResults);
+  if(!sections.length){
+    alert("スライド／ページを検出できませんでした。資料なしで空コースを作成します。");
+    createEmptyCourses(name, days, start, base); closeGen(); return;
+  }
+  const perDayBudget = dayBudgetMin(start, end, lunchMin);
+  assignMinutes(sections, perDayBudget*days);
+  const dayItems = packDays(sections, days, perDayBudget, breakMin);
+  const newCourses = dayItems.map((items, i) => ({
+    id: uid(), name: days>1 ? `${name} Day${i+1}` : name, start, base,
+    blocks: toBlocks(items, start, lunchStart, lunchMin)
+  }));
+  S.courses.push(...newCourses);
+  S.activeId = newCourses[0].id; S.run = null; peek = null; save(); render();
+
+  const hadExplicit = sections.some(s => s.explicit);
+  const lastDayMin = dayItems[dayItems.length-1].reduce((a,s) => a+s.min, 0);
+  const overBudget = lastDayMin > perDayBudget * 1.1;
+  alert(`「${name}」を${newCourses.length}日分、自動生成しました。\n` +
+    (hadExplicit
+      ? "スライドに記載された「n分」の表記を優先し、記載のない部分は枚数から見積もっています。"
+      : "所要時間の記載が見つからなかったため、スライド枚数の比率だけで機械的に配分しています。") +
+    "\nあくまで自動見積りです。必ず内容とタイトルを確認し、「コマ編集」欄で調整してください。" +
+    (overBudget ? `\n\n⚠ 資料の分量に対して日数が足りていない可能性があります。最終日（${dayItems.length}日目）が約${lastDayMin}分（1日の目安${perDayBudget}分を大きく超過）になっています。日数を増やすか、コマ編集で内容を間引いてください。` : ""));
+  closeGen();
+}
+function openGen(){
+  GEN_FILES = [];
+  $("genName").value = ""; $("genDays").value = "1";
+  $("genStart").value = "09:30"; $("genEnd").value = "16:50";
+  $("genLunch").value = "12:00"; $("genLunchMin").value = "60"; $("genBreakMin").value = "10";
+  $("genBase").value = "";
+  $("genFileList").textContent = "未選択"; $("genFileList").className = "empty";
+  $("genStatus").textContent = "";
+  $("genModal").classList.add("on");
+}
+function closeGen(){ $("genModal").classList.remove("on"); }
+
+/* ============================ イベント ============================ */
+$("courseSel").onchange = e => { S.activeId = e.target.value; S.run = null; peek = null; save(); render(); };
+$("btnNewCourse").onclick = openGen;
+$("btnCloseGen").onclick = closeGen;
+$("btnGenPick").onclick = () => $("genFiles").click();
+$("genFiles").onchange = e => {
+  const files = [...e.target.files];
+  GEN_FILES = files.map(f => ({name:f.name, file:f, kind: /\.pdf$/i.test(f.name) ? "pdf" : "pptx"}));
+  $("genFileList").textContent = GEN_FILES.length ? GEN_FILES.map(f=>f.name).join("、") : "未選択";
+  $("genFileList").className = GEN_FILES.length ? "" : "empty";
+  e.target.value = "";
+};
+$("btnGenRun").onclick = () => { $("btnGenRun").disabled = true; runAutoGen().finally(() => { $("btnGenRun").disabled = false; }); };
+$("btnGenEmpty").onclick = () => {
+  const name = $("genName").value.trim() || "新しい講座";
+  const days = Math.max(1, +$("genDays").value || 1);
+  createEmptyCourses(name, days, $("genStart").value || "09:30", $("genBase").value.trim());
+  closeGen();
+};
+$("btnDelCourse").onclick = () => {
+  if(S.courses.length <= 1) return alert("最後の講座は削除できません");
+  if(!confirm(`「${course().name}」を削除します。よろしいですか？`)) return;
+  S.courses = S.courses.filter(c => c.id !== S.activeId);
+  S.activeId = S.courses[0].id; S.run = null; peek = null; save(); render();
+};
+$("startTime").onchange = e => { course().start = e.target.value; save(); render(); };
+$("btnAdd").onclick = () => { course().blocks.push(B({title:"新しいコマ", min:30})); save(); render(); };
+$("btnResetRun").onclick = () => { if(confirm("進行状況をリセットします")){ S.run = null; peek = null; save(); render(); } };
+$("btnResetAll").onclick = () => {
+  if(confirm("すべてのコース・コマの内容を初期状態に戻します。\nブラウザに保存された編集内容（追加・削除・時間変更など）はすべて失われます。\nよろしいですか？")){
+    S = defaultState();
+    peek = null;
+    save();
+    render();
+  }
+};
+$("btnGen").onclick = () => {
+  if(course().blocks.length && !confirm("既存のコマを置き換えます。よろしいですか？")) return;
+  const c = course();
+  c.start = $("gStart").value;
+  c.blocks = genBlocks({start:$("gStart").value, session:+$("gSession").value, brkMin:+$("gBreak").value,
+                        lunch:$("gLunch").value, lunchMin:+$("gLunchMin").value, end:$("gEnd").value});
+  S.run = null; peek = null; save(); render();
+};
+
+$("timeline").addEventListener("click", e => {
+  const row = e.target.closest("[data-i]"); if(!row) return;
+  const i = +row.dataset.i;
+  peek = (peek === i) ? null : i;
+  renderTimeline(); renderMat();
+});
+$("mat").addEventListener("click", e => {
+  const delBtn = e.target.closest("[data-del-ref]");
+  if(delBtn){
+    const b = course().blocks[matBlockIndex()]; if(!b || !b.refs) return;
+    const ri = +delBtn.dataset.delRef, r = b.refs[ri]; if(!r) return;
+    if(confirm(`資料「${r.label}」を削除します。よろしいですか？`)){
+      b.refs.splice(ri, 1); save(); renderMat();
+    }
+    return;
+  }
+  const addBtn = e.target.closest("[data-add-ref]");
+  if(addBtn){
+    const b = course().blocks[matBlockIndex()]; if(!b) return;
+    const label = ask("資料の名前（ボタンに表示されます）", ""); if(!label) return;
+    const file = ask("ファイル名またはパス\n（このコマの教材フォルダ内にある場合はファイル名だけでOK）", ""); if(!file) return;
+    const note = ask("補足（ページ範囲など・省略可）", "");
+    b.refs = b.refs || [];
+    b.refs.push({label, file, note: note || undefined});
+    save(); renderMat();
+    return;
+  }
+  const btn = e.target.closest("[data-addon]"); if(!btn) return;
+  const no = +btn.dataset.addon, m = ADDONS[no];
+  insertAt(B({title:`追加演習${no}：${m.t}`, type:"exercise", min:+btn.dataset.min}));
+});
+
+$("editList").addEventListener("change", e => {
+  const row = e.target.closest("[data-i]"); if(!row) return;
+  const b = course().blocks[+row.dataset.i], f = e.target.dataset.f; if(!f) return;
+  b[f] = f === "min" ? Math.max(1, +e.target.value) : e.target.value;
+  save(); render();
+});
+$("editList").addEventListener("click", e => {
+  const btn = e.target.closest("[data-act]"); if(!btn) return;
+  const i = +btn.closest("[data-i]").dataset.i, bl = course().blocks;
+  if(btn.dataset.act === "del") bl.splice(i,1);
+  if(btn.dataset.act === "up" && i > 0) bl.splice(i-1, 0, bl.splice(i,1)[0]);
+  if(btn.dataset.act === "down" && i < bl.length-1) bl.splice(i+1, 0, bl.splice(i,1)[0]);
+  save(); render();
+});
+
+$("btnStart").onclick = () => {
+  if(!S.run){ startBlock(0); return; }
+  const now = Date.now();
+  if(S.run.paused){ S.run.startedMs = now - S.run.pausedMs; S.run.paused = false; }
+  else { S.run.pausedMs = now - S.run.startedMs; S.run.paused = true; }
+  save(); render();
+};
+$("btnNext").onclick = nextBlock;
+$("btnInsert").onclick = () => insertPrompt("exercise");
+$("btnBreak").onclick  = () => insertPrompt("break");
+document.querySelectorAll("[data-adj]").forEach(b => b.onclick = () => {
+  if(!S.run) return;
+  S.run.adjMs = (S.run.adjMs||0) + (+b.dataset.adj)*60000;
+  save(); render();
+});
+$("btnMute").onclick = () => {
+  S.muted = !S.muted;
+  $("btnMute").textContent = S.muted ? "🔇 予鈴OFF" : "🔊 予鈴ON";
+  save();
+};
+$("btnProject").onclick = () => {
+  $("project").classList.add("on");
+  if(document.documentElement.requestFullscreen) document.documentElement.requestFullscreen().catch(()=>{});
+  renderRun();
+};
+$("btnBook").onclick = () => { $("book").classList.add("on"); renderBook(); $("bookQ").focus(); };
+$("btnCloseBook").onclick = () => $("book").classList.remove("on");
+$("bookQ").oninput = renderBook;
+$("btnMd").onclick = () => {
+  const q = $("bookQ").value.trim();
+  const list = q ? NETA.filter(n => (n.t+n.hook+n.pts.join("")+n.use+n.k.join("")).includes(q)) : NETA;
+  const md = `# 研修ネタ帳\n\n書き出し日：${new Date().toISOString().slice(0,10)}　／　${list.length}本\n\n---\n\n` + netaMd(list);
+  const blob = new Blob([md], {type:"text/markdown;charset=utf-8"});
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob); a.download = "研修ネタ帳.md"; a.click(); URL.revokeObjectURL(a.href);
+};
+
+$("btnExitProject").onclick = exitProject;
+function exitProject(){
+  $("project").classList.remove("on");
+  if(document.fullscreenElement && document.exitFullscreen) document.exitFullscreen().catch(()=>{});
+}
+document.addEventListener("keydown", e => {
+  if(/^(INPUT|SELECT|TEXTAREA)$/.test(e.target.tagName)) return;
+  if(e.key === "Escape"){ exitProject(); $("book").classList.remove("on"); closeGen(); }
+  if(e.key === "b" || e.key === "B") $("btnBook").click();
+  if(e.code === "Space"){ e.preventDefault(); $("btnStart").click(); }
+  if(e.key === "n" || e.key === "N") nextBlock();
+  if(e.key === "f" || e.key === "F") $("btnProject").click();
+});
+
+/* ============================ ループ ============================ */
+setInterval(() => {
+  const d = new Date();
+  $("clock").textContent = `${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
+  if(S.run && !S.run.paused){ renderRun(); renderTimeline(); }
+}, 250);
+
+$("btnMute").textContent = S.muted ? "🔇 予鈴OFF" : "🔊 予鈴ON";
+render();
+</script>
+</body>
+</html>
