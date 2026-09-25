@@ -558,7 +558,7 @@ def m92():
               ("そもそも送るべきでない内容はないか", {"bullet": "dot", "size": 1100, "space_after": 300, "line": 112000}),
               ("どう直すか（設定か、人の判断か）", {"bullet": "dot", "size": 1100, "line": 112000})]),
           fill=ORANGE_PALE, prst="roundRect", adj={"adj": 6000}, inset=(200000, 150000, 150000, 100000))
-    s.text(X0, 5300000, W, 400000, para("※ 練習用の架空データ（codex/testdata/01_マスキング確認データ.txt をもとに作成）", size=1000, color=GRAY))
+    s.text(X0, 5300000, W, 400000, para("※ 練習用の架空データ（開発トラックの testdata/01_マスキング確認データ.txt をもとに作成）", size=1000, color=GRAY))
     return s
 
 
