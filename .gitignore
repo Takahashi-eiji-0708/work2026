@@ -2,3 +2,9 @@ __pycache__/
 .pytest_cache/
 *.pyc
 dist/
+
+# 教材PDF・動画など大容量ファイルは Git に入れず Drive で管理する
+*.pdf
+*.mp4
+*.mov
+*.zip
